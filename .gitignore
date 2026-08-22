@@ -1,0 +1,29 @@
+# Input Excel files (Protected original data)
+*.xlsx
+*.xls
+original/
+
+# Python virtual environment
+.venv/
+venv/
+ENV/
+
+# Python cache and bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+
+# Operating System files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE and Editor settings
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Log files
+*.log
