@@ -1134,6 +1134,26 @@ def create_interactive_map_html(json_data_path="patamap_data.json", geojson_path
             }}
         }};
 
+        // Google Apps Script (スプレッドシート直結エンドポイント)
+        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyJTZ65iQGVbYd5MvJhyEK7jdV5ceh_O12vjtm2TCAUFqB3cykww9U6fkfojw90ySjx/exec";
+
+        // スプレッドシートから最新データを非同期で取得して地図データをリアルタイム更新
+        async function fetchLatestDataFromSpreadsheet() {{
+            try {{
+                const res = await fetch(GAS_API_URL);
+                if (res.ok) {{
+                    const latest = await res.json();
+                    if (latest && Object.keys(latest).length > 0) {{
+                        patamapData = latest;
+                        console.log("✅ Googleスプレッドシートから最新データを同期しました (47都道府県)");
+                    }}
+                }}
+            }} catch (err) {{
+                console.warn("⚠️ スプレッドシート同期スキップ（初期キャッシュデータを使用）:", err);
+            }}
+        }}
+        fetchLatestDataFromSpreadsheet();
+
         window.submitForm = function(e) {{
             e.preventDefault();
             const prefEl = document.getElementById('modalPref');
@@ -1181,10 +1201,28 @@ def create_interactive_map_html(json_data_path="patamap_data.json", geojson_path
                 }}
             }}
 
+            // Google スプレッドシートに非同期送信
+            fetch(GAS_API_URL, {{
+                method: 'POST',
+                headers: {{ 'Content-Type': 'text/plain;charset=utf-8' }},
+                body: JSON.stringify({{
+                    pref: pref,
+                    category: cat,
+                    itemName: itemName,
+                    itemRuby: itemRuby,
+                    memo: memo,
+                    author: author
+                }})
+            }}).then(() => {{
+                console.log("✅ スプレッドシートに投稿が保存されました！");
+            }}).catch(err => {{
+                console.error("❌ スプレッドシート送信エラー:", err);
+            }});
+
             const modal = document.getElementById('addModal');
             if (modal) modal.style.display = 'none';
 
-            alert(`🎉 「${{itemName}}」の情報を登録・保存しました！\\n（※GitHub上のデータ更新時は patamap_data.json に保存されます）`);
+            alert(`🎉 「${{itemName}}」の情報を登録・保存しました！\\n（※Googleスプレッドシートに即時反映され、全員の地図でリアルタイム共有されます）`);
             
             // ポップアップを更新
             jumpToPref(pref);
