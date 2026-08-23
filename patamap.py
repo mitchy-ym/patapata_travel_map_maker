@@ -557,6 +557,225 @@ def create_interactive_map_html(json_data_path="patamap_data.json", geojson_path
             background: #eff6ff;
             border-color: #3b82f6;
         }}
+        .memo-btn {{
+            background: #fdf4ff;
+            border-color: #f0abfc;
+            color: #c026d3;
+        }}
+        .memo-btn:hover {{
+            background: #fae8ff;
+            border-color: #d946ef;
+        }}
+        .memo-btn.active {{
+            background: #d946ef;
+            color: #ffffff;
+            border-color: #c026d3;
+        }}
+
+        /* 項目別吹き出しスタイル（和紙調ふんわりカード） */
+        .item-memo-bubble {{
+            margin: 4px 0 6px 0;
+            padding: 8px 10px;
+            background: #fffdf9;
+            border: 1.5px solid #ecd8c5;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(120, 95, 70, 0.08);
+            font-size: 11.5px;
+            line-height: 1.55;
+            color: #4a3f35;
+            position: relative;
+            animation: memoFadeIn 0.2s ease-out;
+        }}
+        @keyframes memoFadeIn {{
+            from {{ opacity: 0; transform: translateY(-4px); }}
+            to {{ opacity: 1; transform: translateY(0); }}
+        }}
+        .memo-bubble-header {{
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-weight: 700;
+            font-size: 11px;
+            color: #b91c1c;
+            margin-bottom: 3px;
+        }}
+        .edit-btn {{
+            background: #f8fafc;
+            border-color: #cbd5e1;
+            color: #64748b;
+        }}
+        .edit-btn:hover {{
+            background: #e2e8f0;
+            border-color: #94a3b8;
+            color: #1e293b;
+        }}
+        .add-item-btn {{
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            padding: 2px 7px;
+            border-radius: 12px;
+            font-size: 10.5px;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.15s ease;
+            outline: none;
+            user-select: none;
+        }}
+        .add-sightseeing-btn {{
+            color: #196f3d;
+            border: 1px solid #52be80;
+            background: #f2faf4;
+        }}
+        .add-sightseeing-btn:hover {{
+            background: #e1f7e7;
+            transform: scale(1.06);
+        }}
+        .add-food-btn {{
+            color: #b95000;
+            border: 1px solid #f39c12;
+            background: #fdf8ee;
+        }}
+        .add-food-btn:hover {{
+            background: #faefd9;
+            transform: scale(1.06);
+        }}
+        .add-drink-btn {{
+            color: #1a5276;
+            border: 1px solid #5499c7;
+            background: #f0f7fb;
+        }}
+        .add-drink-btn:hover {{
+            background: #dff0fa;
+            transform: scale(1.06);
+        }}
+
+        /* 投稿モーダル（ダイアログ）スタイル */
+        .modal-overlay {{
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(30, 25, 20, 0.48);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+        }}
+        .modal-card {{
+            background: #fdfcf9;
+            border: 2px solid #e5d7c7;
+            border-radius: 18px;
+            width: 440px;
+            max-width: 100%;
+            box-shadow: 0 16px 40px rgba(90, 70, 50, 0.25);
+            padding: 22px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            animation: modalPop 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }}
+        @keyframes modalPop {{
+            from {{ opacity: 0; transform: scale(0.92); }}
+            to {{ opacity: 1; transform: scale(1); }}
+        }}
+        .modal-header {{
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px dashed #b91c1c;
+            padding-bottom: 10px;
+        }}
+        .modal-title {{
+            font-size: 16px;
+            font-weight: 800;
+            color: #b91c1c;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }}
+        .modal-close-btn {{
+            background: none;
+            border: none;
+            font-size: 22px;
+            cursor: pointer;
+            color: #8c8273;
+            padding: 0;
+            line-height: 1;
+            transition: color 0.15s ease;
+        }}
+        .modal-close-btn:hover {{
+            color: #b91c1c;
+        }}
+        .form-group {{
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }}
+        .form-label {{
+            font-size: 12px;
+            font-weight: 700;
+            color: #3e3830;
+        }}
+        .form-input, .form-textarea, .form-select {{
+            padding: 8px 12px;
+            border-radius: 9px;
+            border: 1.5px solid #dcd1c4;
+            font-size: 13px;
+            color: #2b2b2b;
+            background: #ffffff;
+            outline: none;
+            font-family: inherit;
+            transition: all 0.2s ease;
+        }}
+        .form-input:focus, .form-textarea:focus, .form-select:focus {{
+            border-color: #b91c1c;
+            box-shadow: 0 0 0 3px rgba(185, 28, 28, 0.12);
+        }}
+        .form-textarea {{
+            resize: vertical;
+            min-height: 70px;
+        }}
+        .modal-actions {{
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 6px;
+        }}
+        .btn-secondary {{
+            padding: 8px 16px;
+            border-radius: 9px;
+            border: 1.5px solid #dcd1c4;
+            background: #fdfcf9;
+            color: #5c5346;
+            font-weight: 600;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }}
+        .btn-secondary:hover {{
+            background: #f1ebd8;
+        }}
+        .btn-primary {{
+            padding: 8px 20px;
+            border-radius: 9px;
+            border: none;
+            background: #b91c1c;
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 12px;
+            cursor: pointer;
+            box-shadow: 0 3px 10px rgba(185, 28, 28, 0.25);
+            transition: all 0.15s ease;
+        }}
+        .btn-primary:hover {{
+            background: #991b1b;
+            transform: translateY(-1px);
+        }}
     </style>
 </head>
 <body>
@@ -581,6 +800,10 @@ def create_interactive_map_html(json_data_path="patamap_data.json", geojson_path
                 <span class="tip-label">項目クリック</span>
                 <span class="tip-sep">:</span>
                 <span class="tip-desc">Googleマップ/検索を開く</span>
+                <span class="tip-icon">💬</span>
+                <span class="tip-label">メモボタン</span>
+                <span class="tip-sep">:</span>
+                <span class="tip-desc">リスナーの口コミを表示</span>
                 <span class="tip-icon">👆</span>
                 <span class="tip-label">地区ボタン</span>
                 <span class="tip-sep">:</span>
@@ -594,6 +817,48 @@ def create_interactive_map_html(json_data_path="patamap_data.json", geojson_path
 
         <!-- ECharts描画コンテナ -->
         <div id="main"></div>
+    </div>
+
+    <!-- 投稿モーダル（ダイアログ） -->
+    <div id="addModal" class="modal-overlay" onclick="closeAddModal(event)">
+        <div class="modal-card" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <div class="modal-title" id="modalTitle">新しい項目・口コミを追加</div>
+                <button type="button" class="modal-close-btn" onclick="closeAddModal()">&times;</button>
+            </div>
+            <form id="addForm" onsubmit="submitForm(event)">
+                <div class="form-group">
+                    <label class="form-label">都道府県</label>
+                    <select id="modalPref" class="form-select" required>
+                        {pref_select_options_html}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">カテゴリ</label>
+                    <select id="modalCategory" class="form-select" required>
+                        <option value="sightseeing">観光地・名所</option>
+                        <option value="food">ご当地グルメ・食べ物</option>
+                        <option value="drink">地酒・お酒</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">項目・スポット名</label>
+                    <input type="text" id="modalItemName" class="form-input" placeholder="例: 大洗マリンタワー、水戸納豆" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">おすすめメモ・口コミ（任意）</label>
+                    <textarea id="modalMemo" class="form-textarea" placeholder="例: 展望台から太平洋が一望できて夕日が最高です！"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">ニックネーム（任意）</label>
+                    <input type="text" id="modalAuthor" class="form-input" placeholder="例: フロリファンA">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="closeAddModal()">キャンセル</button>
+                    <button type="submit" class="btn-primary">登録・保存</button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <script>
@@ -638,8 +903,39 @@ def create_interactive_map_html(json_data_path="patamap_data.json", geojson_path
             }});
         }});
 
-        // テキストをルビ付き・デュアルアクションボタンHTMLに整形する関数（v1.1）
-        function formatList(text, category, prefName) {{
+        // 都道府県のメモテキストを辞書化する関数
+        function parsePrefMemos(memoText) {{
+            const memoMap = {{}};
+            if (!memoText || memoText === 'なし') return memoMap;
+            const entries = memoText.replace(/\\n/g, '、').split('、');
+            entries.forEach(entry => {{
+                const parts = entry.split(/[:：]/);
+                if (parts.length >= 2) {{
+                    const key = parts[0].trim().replace(/<rt>[^<]*<\\/rt>/g, '').replace(/<[^>]+>/g, '');
+                    const val = parts.slice(1).join(':').trim();
+                    if (key && val) {{
+                        memoMap[key] = val;
+                    }}
+                }}
+            }});
+            return memoMap;
+        }}
+
+        // アイテムに対応するメモを検索する関数
+        function findItemMemo(cleanPlain, cleanName, memoMap) {{
+            if (!memoMap || Object.keys(memoMap).length === 0) return null;
+            if (memoMap[cleanPlain]) return memoMap[cleanPlain];
+            if (memoMap[cleanName]) return memoMap[cleanName];
+            for (let k in memoMap) {{
+                if (cleanPlain.includes(k) || k.includes(cleanPlain) || cleanName.includes(k) || k.includes(cleanName)) {{
+                    return memoMap[k];
+                }}
+            }}
+            return null;
+        }}
+
+        // テキストをルビ付き・デュアルアクションボタン＆メモ吹き出しHTMLに整形する関数（v1.2）
+        function formatList(text, category, prefName, memoMap) {{
             if (!text || text === 'なし') return '<span style="color:#999; font-style:italic;">なし</span>';
             
             const rawItems = text.replace(/\\n/g, '、').replace(/,/g, '、').split('、').map(s => s.trim()).filter(s => s);
@@ -660,7 +956,7 @@ def create_interactive_map_html(json_data_path="patamap_data.json", geojson_path
                 'うめちゃんち', '岡本屋', '武蔵屋', '直ちゃん', 'おぐら', 'ひでじビール', 'むじゃき', 'やぶ金'
             ];
 
-            const formattedItems = rawItems.map(item => {{
+            const formattedItems = rawItems.map((item, idx) => {{
                 let cleanName = item.replace(/<rt>[^<]*<\\/rt>/g, '').replace(/<[^>]+>/g, '').replace(/[（\\(][^）\\)]*[）\\)]/g, '').trim();
                 // 検索ノイズとなる接頭修飾フレーズを自動トリミング
                 cleanName = cleanName.replace(/^(世界遺産・国宝|世界遺産|国宝|特別名勝|名勝|国史跡|国指定史跡|国指定天然記念物|天然記念物|日本百名山|日本三名城|新日本三大夜景|現存天守|奇跡の清流|日本最後の清流|特別天然記念物|大本山|世界新三大夜景|名物|元祖)\\s*/g, '').trim();
@@ -703,24 +999,124 @@ def create_interactive_map_html(json_data_path="patamap_data.json", geojson_path
                 }}
                 btnsHtml += `<a href="${{searchUrl}}" target="_blank" rel="noopener noreferrer" class="action-btn search-btn" title="${{cleanPlain}} をGoogleで検索する">🔍</a>`;
                 
+                // おすすめメモのチェック
+                const itemMemo = findItemMemo(cleanPlain, cleanName, memoMap);
+                let memoBtnHtml = '';
+                let memoBubbleHtml = '';
+                if (itemMemo) {{
+                    const memoId = 'memo-' + category + '-' + idx + '-' + Math.random().toString(36).substr(2, 5);
+                    memoBtnHtml = `<button type="button" class="action-btn memo-btn" onclick="toggleMemo(this, '${{memoId}}')" title="リスナーのおすすめメモを見る">💬</button>`;
+                    memoBubbleHtml = `
+                        <div id="${{memoId}}" class="item-memo-bubble" style="display:none;">
+                            <div class="memo-bubble-header">💡 リスナーおすすめ</div>
+                            <div class="memo-bubble-text">${{itemMemo}}</div>
+                        </div>
+                    `;
+                }}
+
+                const editBtnHtml = `<button type="button" class="action-btn edit-btn" onclick="openAddModal('${{prefName}}', '${{category}}', '${{cleanPlain}}')" title="「${{cleanPlain}}」の口コミ・おすすめを書く">✏️</button>`;
+
                 return `<li class="tooltip-list-item">
                     <div class="item-row">
                         <span class="item-text">${{item}}</span>
                         <div class="item-action-btns">
-                            ${{btnsHtml}}
+                            ${{btnsHtml}}${{memoBtnHtml}}${{editBtnHtml}}
                         </div>
                     </div>
+                    ${{memoBubbleHtml}}
                 </li>`;
             }});
             
             return `<ul class="tooltip-items-list">${{formattedItems.join('')}}</ul>`;
         }}
 
+        // メモ吹き出しの開閉トグル関数
+        window.toggleMemo = function(btn, memoId) {{
+            const bubble = document.getElementById(memoId);
+            if (!bubble) return;
+            if (bubble.style.display === 'none' || bubble.style.display === '') {{
+                bubble.style.display = 'block';
+                btn.classList.add('active');
+            }} else {{
+                bubble.style.display = 'none';
+                btn.classList.remove('active');
+            }}
+        }};
+
+        // 投稿モーダルの開閉・送信制御
+        window.openAddModal = function(pref, cat, itemName) {{
+            // 開いていたポップアップ（ツールチップ）を閉じる
+            if (typeof myChart !== 'undefined' && myChart) {{
+                myChart.dispatchAction({{ type: 'hideTip' }});
+            }}
+
+            const modal = document.getElementById('addModal');
+            if (!modal) return;
+            document.getElementById('modalPref').value = pref || '';
+            document.getElementById('modalCategory').value = cat || 'sightseeing';
+            document.getElementById('modalItemName').value = itemName || '';
+            document.getElementById('modalMemo').value = '';
+            document.getElementById('modalAuthor').value = '';
+            
+            const titleEl = document.getElementById('modalTitle');
+            if (itemName) {{
+                titleEl.innerHTML = `「${{itemName}}」に口コミを追加`;
+            }} else {{
+                const catLabel = cat === 'food' ? 'グルメ' : cat === 'drink' ? '地酒' : '観光地';
+                titleEl.innerHTML = `【${{pref}}】に新しい${{catLabel}}を追加`;
+            }}
+            modal.style.display = 'flex';
+        }};
+
+        window.closeAddModal = function(e) {{
+            if (!e || e.target === document.getElementById('addModal') || e.target.classList.contains('modal-close-btn') || e.target.classList.contains('btn-secondary')) {{
+                const modal = document.getElementById('addModal');
+                if (modal) modal.style.display = 'none';
+            }}
+        }};
+
+        window.submitForm = function(e) {{
+            e.preventDefault();
+            const pref = document.getElementById('modalPref').value;
+            const cat = document.getElementById('modalCategory').value;
+            const itemName = document.getElementById('modalItemName').value.trim();
+            const memo = document.getElementById('modalMemo').value.trim();
+            const author = document.getElementById('modalAuthor').value.trim();
+
+            if (!pref || !itemName) return;
+
+            // ローカルデータに即時反映
+            if (patamapData[pref]) {{
+                const catKey = cat === 'food' ? '食べ物' : cat === 'drink' ? 'お酒' : '観光地';
+                if (!patamapData[pref][catKey] || patamapData[pref][catKey] === 'なし') {{
+                    patamapData[pref][catKey] = itemName;
+                }} else if (!patamapData[pref][catKey].includes(itemName)) {{
+                    patamapData[pref][catKey] += '、' + itemName;
+                }}
+                if (memo) {{
+                    const memoStr = author ? `${{itemName}}: ${{memo}}（by ${{author}}）` : `${{itemName}}: ${{memo}}`;
+                    if (!patamapData[pref]['メモ'] || patamapData[pref]['メモ'] === 'なし') {{
+                        patamapData[pref]['メモ'] = memoStr;
+                    }} else {{
+                        patamapData[pref]['メモ'] += '、' + memoStr;
+                    }}
+                }}
+            }}
+
+            const modal = document.getElementById('addModal');
+            if (modal) modal.style.display = 'none';
+
+            alert(`🎉 「${{itemName}}」の情報を登録・追加しました！\\n（※Excel連携後はスプレッドシートにも自動保存されます）`);
+            
+            // ポップアップを更新
+            jumpToPref(pref);
+        }};
+
         const option = {{
             tooltip: {{
                 trigger: 'item',
                 enterable: true,
-                hideDelay: 300,
+                hideDelay: 400,
                 backgroundColor: 'rgba(255, 253, 248, 0.98)',
                 borderColor: '#b91c1c',
                 borderWidth: 2,
@@ -756,9 +1152,10 @@ def create_interactive_map_html(json_data_path="patamap_data.json", geojson_path
                     if (prefData) {{
                         const region = prefData['地区'] || 'その他';
                         const colorInfo = regionColors[region] || regionColors['その他'];
-                        const sightHtml = formatList(prefData['観光地'], 'sightseeing', prefName);
-                        const foodHtml = formatList(prefData['食べ物'], 'food', prefName);
-                        const drinkHtml = formatList(prefData['お酒'], 'drink', prefName);
+                        const memoMap = parsePrefMemos(prefData['メモ'] || '');
+                        const sightHtml = formatList(prefData['観光地'], 'sightseeing', prefName, memoMap);
+                        const foodHtml = formatList(prefData['食べ物'], 'food', prefName, memoMap);
+                        const drinkHtml = formatList(prefData['お酒'], 'drink', prefName, memoMap);
 
                         return `
                             <div class="tooltip-card">
@@ -771,15 +1168,24 @@ def create_interactive_map_html(json_data_path="patamap_data.json", geojson_path
                                     </span>
                                 </div>
                                 <div class="tooltip-section">
-                                    <div class="tooltip-title sightseeing-title">📸 観光地・名所</div>
+                                    <div class="tooltip-title sightseeing-title">
+                                        <span>📸 観光地・名所</span>
+                                        <button type="button" class="add-item-btn add-sightseeing-btn" onclick="openAddModal('${{prefName}}', 'sightseeing', '')" title="【${{prefName}}】に新しい観光地を追加">➕ 観光地追加</button>
+                                    </div>
                                     <div class="tooltip-content sightseeing-box">${{sightHtml}}</div>
                                 </div>
                                 <div class="tooltip-section">
-                                    <div class="tooltip-title food-title">🍽️ ご当地グルメ・食べ物</div>
+                                    <div class="tooltip-title food-title">
+                                        <span>🍽️ ご当地グルメ・食べ物</span>
+                                        <button type="button" class="add-item-btn add-food-btn" onclick="openAddModal('${{prefName}}', 'food', '')" title="【${{prefName}}】に新しいグルメを追加">➕ グルメ追加</button>
+                                    </div>
                                     <div class="tooltip-content food-box">${{foodHtml}}</div>
                                 </div>
                                 <div class="tooltip-section">
-                                    <div class="tooltip-title drink-title">🍶 地酒・お酒</div>
+                                    <div class="tooltip-title drink-title">
+                                        <span>🍶 地酒・お酒</span>
+                                        <button type="button" class="add-item-btn add-drink-btn" onclick="openAddModal('${{prefName}}', 'drink', '')" title="【${{prefName}}】に新しい地酒を追加">➕ 地酒追加</button>
+                                    </div>
                                     <div class="tooltip-content drink-box">${{drinkHtml}}</div>
                                 </div>
                             </div>
@@ -915,7 +1321,8 @@ def main():
         output_html_path="index.html"
     )
 
-    if AUTO_OPEN_BROWSER and os.path.exists(html_file):
+    is_ci = os.environ.get("CI", "false").lower() in ("true", "1")
+    if AUTO_OPEN_BROWSER and not is_ci and os.path.exists(html_file):
         print(f"[ステップ3] デフォルトブラウザで地図を開きます: {os.path.abspath(html_file)}")
         webbrowser.open(f"file:///{os.path.abspath(html_file)}")
 
