@@ -181,7 +181,7 @@ def create_interactive_map_html(geojson_path="japan.geojson", output_html_path="
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>リスナーと作る！全国観光マップ フロリの47都道府県パタパタ旅行企画</title>
+    <title>リスナーと作る！全国観光マップ～フロリの47都道府県パタパタ旅行～</title>
     <!-- Google Fonts: Zen Maru Gothic Light（和紙調に馴染む細身の上品な丸ゴシック） -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -224,7 +224,7 @@ def create_interactive_map_html(geojson_path="japan.geojson", output_html_path="
             z-index: 1;
         }}
 
-        /* 左上フローティングカード（和紙すりガラス調） */
+        /* 左上フローティングカード（和紙すりガラス調・折りたたみ対応） */
         .floating-card {{
             position: absolute;
             top: 20px;
@@ -241,10 +241,56 @@ def create_interactive_map_html(geojson_path="japan.geojson", output_html_path="
             display: flex;
             flex-direction: column;
             gap: 8px;
-            transition: all 0.3s ease;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }}
+        .floating-card.collapsed {{
+            width: auto;
+            max-width: calc(100vw - 30px);
+            padding: 10px 14px;
+            gap: 0;
+            border-radius: 14px;
+        }}
+        .floating-card.collapsed .card-body-collapsible {{
+            display: none;
+        }}
+        .floating-card.collapsed .card-title-sub {{
+            display: none;
         }}
         .card-header {{
             display: block;
+            width: 100%;
+        }}
+        .card-header-row {{
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 6px;
+            width: 100%;
+        }}
+        .card-toggle-btn {{
+            background: rgba(120, 95, 70, 0.08);
+            border: 1px solid rgba(120, 95, 70, 0.2);
+            border-radius: 8px;
+            padding: 3px 8px;
+            font-size: 11px;
+            font-weight: 700;
+            color: #786d5f;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+        }}
+        .card-toggle-btn:hover {{
+            background: #b91c1c;
+            color: #ffffff;
+            border-color: #b91c1c;
+        }}
+        .card-body-collapsible {{
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
             width: 100%;
         }}
         .card-title-main {{
@@ -956,39 +1002,44 @@ def create_interactive_map_html(geojson_path="japan.geojson", output_html_path="
 </head>
 <body>
     <div id="map-container">
-        <!-- 操作＆凡例カード -->
-        <div class="floating-card">
+        <!-- 操作＆凡例カード（折りたたみ対応） -->
+        <div id="floatingCard" class="floating-card">
             <div class="card-header">
-                <div class="card-title-main">🗾 全国観光マップ（47都道府県）</div>
-                <div class="card-title-sub">フロリの47都道府県パタパタ旅行企画</div>
+                <div class="card-header-row">
+                    <div class="card-title-main">🗾 リスナーと作る！全国観光マップ</div>
+                    <button type="button" id="cardToggleBtn" class="card-toggle-btn" onclick="toggleFloatingCard()" title="メニューを開閉">閉じる ▲</button>
+                </div>
+                <div class="card-title-sub">～フロリの47都道府県パタパタ旅行～</div>
                 <div id="syncStatus" class="sync-badge sync-loading"><span class="sync-spinner"></span>データ同期中...</div>
             </div>
-            <div class="region-legend-container">
-                {legend_badges_html}
-            </div>
-            <div class="search-container">
-                <select id="pref-select" class="pref-select" onchange="jumpToPref(this.value)">
-                    {pref_select_options_html}
-                </select>
-                <button class="btn-all-japan" onclick="resetToJapan()" title="日本全体表示に戻す">全体</button>
-            </div>
-            <div class="card-footer-tip">
-                <span class="tip-icon">🗺️/🔍</span>
-                <span class="tip-label">項目クリック</span>
-                <span class="tip-sep">:</span>
-                <span class="tip-desc">Googleマップ/検索を開く</span>
-                <span class="tip-icon">💬</span>
-                <span class="tip-label">メモボタン</span>
-                <span class="tip-sep">:</span>
-                <span class="tip-desc">リスナーの口コミを表示</span>
-                <span class="tip-icon">👆</span>
-                <span class="tip-label">地区ボタン</span>
-                <span class="tip-sep">:</span>
-                <span class="tip-desc">エリア全体を拡大表示</span>
-                <span class="tip-icon">📍</span>
-                <span class="tip-label">県ホバー</span>
-                <span class="tip-sep">:</span>
-                <span class="tip-desc">観光地・グルメを表示</span>
+            <div class="card-body-collapsible">
+                <div class="region-legend-container">
+                    {legend_badges_html}
+                </div>
+                <div class="search-container">
+                    <select id="pref-select" class="pref-select" onchange="jumpToPref(this.value)">
+                        {pref_select_options_html}
+                    </select>
+                    <button class="btn-all-japan" onclick="resetToJapan()" title="日本全体表示に戻す">全体</button>
+                </div>
+                <div class="card-footer-tip">
+                    <span class="tip-icon">🗺️/🔍</span>
+                    <span class="tip-label">項目クリック</span>
+                    <span class="tip-sep">:</span>
+                    <span class="tip-desc">Googleマップ/検索を開く</span>
+                    <span class="tip-icon">💬</span>
+                    <span class="tip-label">メモボタン</span>
+                    <span class="tip-sep">:</span>
+                    <span class="tip-desc">リスナーの口コミを表示</span>
+                    <span class="tip-icon">👆</span>
+                    <span class="tip-label">地区ボタン</span>
+                    <span class="tip-sep">:</span>
+                    <span class="tip-desc">エリア全体を拡大表示</span>
+                    <span class="tip-icon">📍</span>
+                    <span class="tip-label">県ホバー</span>
+                    <span class="tip-sep">:</span>
+                    <span class="tip-desc">観光地・グルメを表示</span>
+                </div>
             </div>
         </div>
 
@@ -1720,6 +1771,21 @@ def create_interactive_map_html(geojson_path="japan.geojson", output_html_path="
         function resetToJapan() {{
             document.getElementById('pref-select').value = '';
             navigateMap([137.5, 37.5], 1.25);
+        }}
+
+        // 左上操作ボックスの折りたたみ／展開切り替え関数
+        function toggleFloatingCard() {{
+            const card = document.getElementById('floatingCard');
+            const btn = document.getElementById('cardToggleBtn');
+            if (!card || !btn) return;
+            card.classList.toggle('collapsed');
+            if (card.classList.contains('collapsed')) {{
+                btn.innerHTML = 'メニュー開く ▼';
+                btn.title = 'メニューを展開';
+            }} else {{
+                btn.innerHTML = '閉じる ▲';
+                btn.title = 'メニューを折りたたむ';
+            }}
         }}
 
         window.addEventListener('resize', function () {{
