@@ -962,8 +962,8 @@ def create_interactive_map_html(geojson_path="japan.geojson", output_html_path="
             
             // 改行または特殊区切りで1件ずつ分割（改行がない場合は読点分割）
             let entries = [];
-            if (memoText.includes('\n')) {{
-                entries = memoText.split('\n');
+            if (memoText.indexOf('\\n') !== -1) {{
+                entries = memoText.split(/\\r?\\n/);
             }} else {{
                 entries = memoText.split('、');
             }}

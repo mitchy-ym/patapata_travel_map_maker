@@ -926,10 +926,8 @@
             
             // 改行または特殊区切りで1件ずつ分割（改行がない場合は読点分割）
             let entries = [];
-            if (memoText.includes('
-')) {
-                entries = memoText.split('
-');
+            if (memoText.indexOf('\n') !== -1) {
+                entries = memoText.split(/\r?\n/);
             } else {
                 entries = memoText.split('、');
             }
