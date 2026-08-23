@@ -173,10 +173,10 @@ def create_interactive_map_html(json_data_path="patamap_data.json", geojson_path
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>リスナーと作る！全国観光マップ フロリの47都道府県パタパタ旅行企画</title>
-    <!-- Google Fonts: Zen Maru Gothic（和紙調に馴染む上品な丸ゴシック） -->
+    <!-- Google Fonts: Zen Maru Gothic Light（和紙調に馴染む細身の上品な丸ゴシック） -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     <!-- EChartsライブラリの読み込み -->
     <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
     <style>
@@ -188,6 +188,7 @@ def create_interactive_map_html(json_data_path="patamap_data.json", geojson_path
             margin: 0;
             padding: 0;
             font-family: "Zen Maru Gothic", "Hiragino Maru Gothic ProN", "Hiragino Sans", "Yu Gothic UI", "Yu Gothic", Meiryo, sans-serif !important;
+            font-weight: 300 !important;
             background-color: {MAP_BG_COLOR};
             color: #333;
             overflow: hidden;
@@ -1279,7 +1280,7 @@ def create_interactive_map_html(json_data_path="patamap_data.json", geojson_path
                         label: {{
                             show: true,
                             color: '#111',
-                            fontWeight: 'bold',
+                            fontWeight: '700',
                             fontSize: 13,
                             fontFamily: '"Zen Maru Gothic", "Hiragino Maru Gothic ProN", "Hiragino Sans", "Yu Gothic UI", sans-serif'
                         }}
@@ -1288,7 +1289,7 @@ def create_interactive_map_html(json_data_path="patamap_data.json", geojson_path
                         show: true,
                         color: '#333',
                         fontSize: 11,
-                        fontWeight: '700',
+                        fontWeight: '300',
                         fontFamily: '"Zen Maru Gothic", "Hiragino Maru Gothic ProN", "Hiragino Sans", "Yu Gothic UI", sans-serif',
                         formatter: '{{b}}'
                     }},
@@ -1299,17 +1300,19 @@ def create_interactive_map_html(json_data_path="patamap_data.json", geojson_path
 
         myChart.setOption(option);
 
-        // Webフォント（Zen Maru Gothic）のロード完了時に地図上の文字を確実に丸ゴシックで再描画
+        // Webフォント（Zen Maru Gothic）のロード完了時に地図上の文字を確実に丸ゴシック（Light）で再描画
         if (document.fonts) {{
             document.fonts.ready.then(function () {{
                 myChart.setOption({{
                     series: [{{
                         label: {{
-                            fontFamily: '"Zen Maru Gothic", "Hiragino Maru Gothic ProN", "Hiragino Sans", "Yu Gothic UI", sans-serif'
+                            fontFamily: '"Zen Maru Gothic", "Hiragino Maru Gothic ProN", "Hiragino Sans", "Yu Gothic UI", sans-serif',
+                            fontWeight: '300'
                         }},
                         emphasis: {{
                             label: {{
-                                fontFamily: '"Zen Maru Gothic", "Hiragino Maru Gothic ProN", "Hiragino Sans", "Yu Gothic UI", sans-serif'
+                                fontFamily: '"Zen Maru Gothic", "Hiragino Maru Gothic ProN", "Hiragino Sans", "Yu Gothic UI", sans-serif',
+                                fontWeight: '700'
                             }}
                         }}
                     }}]
