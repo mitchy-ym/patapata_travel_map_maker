@@ -840,45 +840,6 @@ def create_interactive_map_html(geojson_path="japan.geojson", output_html_path="
             transform: translateY(-1px);
         }}
 
-        /* 同期ステータスバッジ（提案3） */
-        .sync-badge {{
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            font-size: 10px;
-            font-weight: 700;
-            padding: 2px 8px;
-            border-radius: 12px;
-            margin-top: 4px;
-            width: fit-content;
-            transition: all 0.3s ease;
-        }}
-        .sync-loading {{
-            background: #fef3c7;
-            color: #92400e;
-            border: 1px solid #fde68a;
-        }}
-        .sync-ok {{
-            background: #dcfce7;
-            color: #166534;
-            border: 1px solid #bbf7d0;
-        }}
-        .sync-spinner {{
-            width: 8px;
-            height: 8px;
-            border: 1.5px solid #d97706;
-            border-top-color: transparent;
-            border-radius: 50%;
-            display: inline-block;
-            animation: spin 0.8s linear infinite;
-        }}
-        .sync-dot {{
-            width: 6px;
-            height: 6px;
-            background: #16a34a;
-            border-radius: 50%;
-            display: inline-block;
-        }}
         @keyframes spin {{
             to {{ transform: rotate(360deg); }}
         }}
@@ -1013,7 +974,6 @@ def create_interactive_map_html(geojson_path="japan.geojson", output_html_path="
                     <button type="button" id="cardToggleBtn" class="card-toggle-btn" onclick="toggleFloatingCard()" title="メニューを開閉">閉じる ▲</button>
                 </div>
                 <div class="card-title-sub">～フロリの47都道府県パタパタ旅行～</div>
-                <div id="syncStatus" class="sync-badge sync-loading"><span class="sync-spinner"></span>データ同期中...</div>
             </div>
             <div class="card-body-collapsible">
                 <div class="region-legend-container">
@@ -1429,7 +1389,6 @@ def create_interactive_map_html(geojson_path="japan.geojson", output_html_path="
             const icon = document.getElementById('loadingIcon');
             const title = document.getElementById('loadingTitle');
             const desc = document.getElementById('loadingDesc');
-            const badge = document.getElementById('syncStatus');
 
             try {{
                 const res = await fetch(GAS_API_URL);
@@ -1450,10 +1409,6 @@ def create_interactive_map_html(geojson_path="japan.geojson", output_html_path="
                 icon.innerHTML = '✓';
                 title.textContent = '🎉 最新データ同期完了！';
                 desc.textContent = '47都道府県の最新マップを開きます...';
-            }}
-            if (badge) {{
-                badge.className = 'sync-badge sync-ok';
-                badge.innerHTML = '<span class="sync-dot"></span>同期済';
             }}
 
             // 0.45秒後に全画面オーバーレイをふわっと解除して操作可能に
