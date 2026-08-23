@@ -953,7 +953,7 @@ def create_interactive_map_html(geojson_path="japan.geojson", output_html_path="
             }});
         }});
 
-        // 都道府県のメモテキストを辞書化する関数
+        // 都道府県のメモテキストを辞書化する関数（複数口コミ対応）
         function parsePrefMemos(memoText) {{
             const memoMap = {{}};
             if (!memoText || memoText === 'なし') return memoMap;
@@ -964,11 +964,24 @@ def create_interactive_map_html(geojson_path="japan.geojson", output_html_path="
                     const key = parts[0].trim().replace(/<rt>[^<]*<\\/rt>/g, '').replace(/<[^>]+>/g, '');
                     const val = parts.slice(1).join(':').trim();
                     if (key && val) {{
-                        memoMap[key] = val;
+                        if (!memoMap[key]) {{
+                            memoMap[key] = [];
+                        }}
+                        memoMap[key].push(val);
                     }}
                 }}
             }});
-            return memoMap;
+
+            // 複数口コミがある場合は見やすく箇条書きで結合
+            const mergedMap = {{}};
+            for (let k in memoMap) {{
+                if (memoMap[k].length === 1) {{
+                    mergedMap[k] = memoMap[k][0];
+                }} else {{
+                    mergedMap[k] = memoMap[k].map((m, i) => `<div style="margin-bottom:4px;">💬 ${{m}}</div>`).join('');
+                }}
+            }}
+            return mergedMap;
         }}
 
         // アイテムに対応するメモを検索する関数
