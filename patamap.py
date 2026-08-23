@@ -127,11 +127,14 @@ def create_interactive_map_html(json_data_path="patamap_data.json", geojson_path
     with open(json_data_path, "r", encoding="utf-8") as f:
         prefectures_data = json.load(f)
 
-    if not os.path.exists(geojson_path):
-        raise FileNotFoundError(f"エラー: GeoJSONファイル '{geojson_path}' が見つかりません。")
-
     with open(geojson_path, "r", encoding="utf-8") as f:
         japan_geojson = json.load(f)
+
+    # GeoJSONの各featureにEChartsが参照する 'name' プロパティ（日本語名）を付与
+    for feat in japan_geojson.get("features", []):
+        props = feat.get("properties", {})
+        if "nam_ja" in props:
+            props["name"] = props["nam_ja"]
 
     # 地区バッジHTMLの生成
     legend_badges = []
@@ -566,6 +569,13 @@ def create_interactive_map_html(json_data_path="patamap_data.json", geojson_path
         const prefCenters = {json.dumps(PREFECTURE_CENTERS, ensure_ascii=False)};
         const regionCenters = {json.dumps(REGION_CENTERS, ensure_ascii=False)};
         const geoJsonData = {json.dumps(japan_geojson, ensure_ascii=False)};
+        if (geoJsonData && geoJsonData.features) {{
+            geoJsonData.features.forEach(function(f) {{
+                if (f.properties) {{
+                    f.properties.name = f.properties.nam_ja || f.properties.name;
+                }}
+            }});
+        }}
 
         echarts.registerMap('Japan', geoJsonData);
         const myChart = echarts.init(document.getElementById('main'));
