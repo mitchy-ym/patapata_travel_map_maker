@@ -1034,14 +1034,6 @@ def create_interactive_map_html(geojson_path="japan.geojson", output_html_path="
                     <span class="tip-label">メモボタン</span>
                     <span class="tip-sep">:</span>
                     <span class="tip-desc">リスナーの口コミを表示</span>
-                    <span class="tip-icon">👆</span>
-                    <span class="tip-label">地区ボタン</span>
-                    <span class="tip-sep">:</span>
-                    <span class="tip-desc">エリア全体を拡大表示</span>
-                    <span class="tip-icon">📍</span>
-                    <span class="tip-label">県ホバー</span>
-                    <span class="tip-sep">:</span>
-                    <span class="tip-desc">観光地・グルメを表示</span>
                 </div>
             </div>
         </div>
