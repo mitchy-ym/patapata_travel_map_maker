@@ -207,19 +207,21 @@ def create_interactive_map_html(geojson_path="japan.geojson", output_html_path="
         #map-container {{
             width: 100vw;
             height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             background-color: {MAP_BG_COLOR};
             background-image: 
                 radial-gradient(#dcd5c7 1.2px, transparent 1.2px),
                 linear-gradient(135deg, rgba(255, 255, 255, 0.5) 0%, rgba(244, 239, 230, 0.3) 100%);
             background-size: 24px 24px, 100% 100%;
             position: relative;
+            overflow: hidden;
         }}
         #main {{
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
+            z-index: 1;
         }}
 
         /* 左上フローティングカード（和紙すりガラス調） */
@@ -1210,7 +1212,7 @@ def create_interactive_map_html(geojson_path="japan.geojson", output_html_path="
                 const res = await fetch(GAS_API_URL);
                 if (res.ok) {{
                     const latest = await res.json();
-                    if (latest && Object.keys(latest).length > 0) {{
+                    if (latest && typeof latest === 'object' && !latest.status && Object.keys(latest).length >= 40) {{
                         patamapData = latest;
                         console.log("✅ Googleスプレッドシートから最新データを同期しました (47都道府県)");
                     }}
