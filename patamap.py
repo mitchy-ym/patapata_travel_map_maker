@@ -1411,7 +1411,1032 @@ def create_interactive_map_html(json_data_path="patamap_data.json", geojson_path
 
 
 # ==============================================================================
-# 3. メインエントリーポイント
+# 3. 管理者専用データ編集画面（admin.html）の自動生成
+# ==============================================================================
+
+def create_admin_editor_html(
+    json_data_path="patamap_data.json",
+    output_html_path="admin.html"
+):
+    """
+    管理者専用のデータ編集Web画面（admin.html）を生成する。
+    """
+    with open(json_data_path, "r", encoding="utf-8") as f:
+        prefectures_data = json.load(f)
+
+    admin_html_content = f"""<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PataMap 管理者データ編集ツール（非公開）</title>
+    <!-- Google Fonts: Zen Maru Gothic -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        * {{
+            box-sizing: border-box;
+            font-family: "Zen Maru Gothic", "Hiragino Maru Gothic ProN", "Hiragino Sans", "Yu Gothic UI", "Yu Gothic", Meiryo, sans-serif !important;
+        }}
+        body {{
+            margin: 0;
+            padding: 0;
+            background-color: #fdfbf7;
+            background-image: 
+                radial-gradient(#dcd5c7 1.2px, transparent 1.2px),
+                linear-gradient(135deg, rgba(255, 255, 255, 0.5) 0%, rgba(244, 239, 230, 0.3) 100%);
+            background-size: 24px 24px, 100% 100%;
+            color: #2b2b2b;
+            font-weight: 400;
+            min-height: 100vh;
+            padding-bottom: 80px;
+        }}
+        .header-bar {{
+            background: rgba(255, 253, 248, 0.96);
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid #b91c1c;
+            padding: 12px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 16px rgba(120, 95, 70, 0.1);
+        }}
+        .header-title-group {{
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }}
+        .header-title {{
+            font-size: 17px;
+            font-weight: 800;
+            color: #b91c1c;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }}
+        .header-badge {{
+            font-size: 11px;
+            font-weight: 700;
+            background: #fee2e2;
+            color: #b91c1c;
+            border: 1px solid #f87171;
+            padding: 2px 8px;
+            border-radius: 999px;
+        }}
+        .header-actions {{
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }}
+        .btn {{
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 7px 14px;
+            border-radius: 8px;
+            font-size: 12.5px;
+            font-weight: 700;
+            cursor: pointer;
+            border: 1.5px solid transparent;
+            transition: all 0.15s ease;
+            text-decoration: none;
+            outline: none;
+        }}
+        .btn-primary {{
+            background: #b91c1c;
+            color: #ffffff;
+            border-color: #991b1b;
+        }}
+        .btn-primary:hover {{
+            background: #991b1b;
+            box-shadow: 0 2px 8px rgba(185, 28, 28, 0.3);
+        }}
+        .btn-github {{
+            background: #181717;
+            color: #ffffff;
+            border-color: #000000;
+        }}
+        .btn-github:hover {{
+            background: #333333;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }}
+        .btn-secondary {{
+            background: #ffffff;
+            color: #3e3830;
+            border-color: #dcd1c4;
+        }}
+        .btn-secondary:hover {{
+            background: #f7f3ec;
+            border-color: #bfa895;
+        }}
+        .btn-danger {{
+            background: #fee2e2;
+            color: #b91c1c;
+            border-color: #fca5a5;
+        }}
+        .btn-danger:hover {{
+            background: #fecaca;
+        }}
+        .container {{
+            max-width: 1100px;
+            margin: 24px auto;
+            padding: 0 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }}
+        .pref-selector-card {{
+            background: rgba(255, 253, 248, 0.95);
+            border: 1.5px solid #e2d9cc;
+            border-radius: 14px;
+            padding: 16px 20px;
+            box-shadow: 0 4px 14px rgba(120, 95, 70, 0.06);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+        }}
+        .pref-select-label {{
+            font-size: 14px;
+            font-weight: 700;
+            color: #3e3830;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }}
+        .pref-select {{
+            padding: 8px 16px;
+            border-radius: 9px;
+            border: 1.5px solid #dcd1c4;
+            font-size: 15px;
+            font-weight: 700;
+            color: #b91c1c;
+            background: #ffffff;
+            outline: none;
+            cursor: pointer;
+            min-width: 220px;
+        }}
+        .pref-select:focus {{
+            border-color: #b91c1c;
+            box-shadow: 0 0 0 3px rgba(185, 28, 28, 0.12);
+        }}
+        .region-badge-current {{
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+            border: 1px solid #dcd1c4;
+            background: #f4efe6;
+            color: #5c4f3d;
+        }}
+        .category-section {{
+            background: rgba(255, 253, 248, 0.95);
+            border: 1.5px solid #e2d9cc;
+            border-radius: 14px;
+            padding: 18px 22px;
+            box-shadow: 0 4px 14px rgba(120, 95, 70, 0.06);
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }}
+        .category-header {{
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1.5px solid #e2d9cc;
+            padding-bottom: 10px;
+        }}
+        .category-title {{
+            font-size: 15px;
+            font-weight: 800;
+            color: #2b2b2b;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin: 0;
+        }}
+        .category-count {{
+            font-size: 12px;
+            font-weight: 700;
+            color: #78716c;
+            background: #f5f5f4;
+            padding: 2px 8px;
+            border-radius: 999px;
+            margin-left: 6px;
+        }}
+        .items-grid {{
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 10px;
+        }}
+        .item-card {{
+            background: #ffffff;
+            border: 1.5px solid #ebe5dc;
+            border-radius: 10px;
+            padding: 10px 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.15s ease;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+        }}
+        .item-card:hover {{
+            border-color: #b91c1c;
+            box-shadow: 0 3px 8px rgba(185, 28, 28, 0.08);
+        }}
+        .item-card-text {{
+            flex: 1;
+            font-size: 13.5px;
+            line-height: 1.6;
+            word-break: break-word;
+        }}
+        .item-card-actions {{
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            flex-shrink: 0;
+        }}
+        .mini-btn {{
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            border: 1px solid #dcd1c4;
+            background: #fdfbf7;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            transition: all 0.15s ease;
+            color: #5c4f3d;
+        }}
+        .mini-btn:hover {{
+            background: #b91c1c;
+            color: #ffffff;
+            border-color: #b91c1c;
+        }}
+        .mini-btn.delete-btn:hover {{
+            background: #dc2626;
+            border-color: #dc2626;
+            color: #ffffff;
+        }}
+        .memo-card {{
+            background: #ffffff;
+            border: 1.5px solid #ebe5dc;
+            border-radius: 10px;
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+        }}
+        .memo-spot {{
+            font-weight: 700;
+            font-size: 13px;
+            color: #b91c1c;
+            margin-bottom: 4px;
+        }}
+        .memo-body {{
+            font-size: 13px;
+            line-height: 1.5;
+            color: #3e3830;
+        }}
+        .memo-author {{
+            font-size: 11px;
+            color: #78716c;
+            margin-top: 4px;
+            font-style: italic;
+        }}
+        ruby {{
+            ruby-position: over;
+            ruby-align: center;
+        }}
+        rt {{
+            font-size: 0.62em;
+            color: #475569;
+            font-weight: 500;
+            line-height: 1;
+        }}
+
+        /* モーダル */
+        .modal-backdrop {{
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(43, 43, 43, 0.55);
+            backdrop-filter: blur(4px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }}
+        .modal-box {{
+            background: #fffdf9;
+            border: 2px solid #b91c1c;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 480px;
+            box-shadow: 0 16px 36px rgba(0, 0, 0, 0.22);
+            padding: 22px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            animation: modalPop 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }}
+        @keyframes modalPop {{
+            from {{ opacity: 0; transform: scale(0.94); }}
+            to {{ opacity: 1; transform: scale(1); }}
+        }}
+        .modal-header {{
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px dashed #b91c1c;
+            padding-bottom: 10px;
+        }}
+        .modal-title {{
+            font-size: 16px;
+            font-weight: 800;
+            color: #b91c1c;
+            margin: 0;
+        }}
+        .form-group {{
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }}
+        .form-label {{
+            font-size: 12.5px;
+            font-weight: 700;
+            color: #3e3830;
+        }}
+        .form-input, .form-textarea, .form-select {{
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1.5px solid #dcd1c4;
+            font-size: 13.5px;
+            color: #2b2b2b;
+            background: #ffffff;
+            outline: none;
+            font-family: inherit;
+        }}
+        .form-input:focus, .form-textarea:focus, .form-select:focus {{
+            border-color: #b91c1c;
+            box-shadow: 0 0 0 3px rgba(185, 28, 28, 0.12);
+        }}
+        .form-textarea {{
+            resize: vertical;
+            min-height: 80px;
+        }}
+        .modal-actions {{
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 6px;
+        }}
+        .toast {{
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: #1e293b;
+            color: #ffffff;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 700;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+            display: none;
+            align-items: center;
+            gap: 8px;
+            z-index: 2000;
+            animation: toastIn 0.2s ease;
+        }}
+        @keyframes toastIn {{
+            from {{ opacity: 0; transform: translateY(10px); }}
+            to {{ opacity: 1; transform: translateY(0); }}
+        }}
+    </style>
+</head>
+<body>
+
+    <!-- ヘッダーバー -->
+    <header class="header-bar">
+        <div class="header-title-group">
+            <h1 class="header-title">🔒 PataMap 管理者データ編集ツール</h1>
+            <span class="header-badge">秘匿管理画面</span>
+        </div>
+        <div class="header-actions">
+            <button type="button" class="btn btn-secondary" onclick="exportJsonFile()" title="編集後の最新 patamap_data.json をダウンロード">📥 JSON保存</button>
+            <button type="button" class="btn btn-secondary" onclick="copyJsonToClipboard()" title="JSONテキストをクリップボードにコピー">📋 JSONコピー</button>
+            <button type="button" class="btn btn-github" onclick="openGithubModal()" title="GitHub API経由で直接リポジトリに保存">🚀 GitHub直接保存</button>
+            <button type="button" class="btn btn-danger" onclick="resetAllChanges()" title="未保存の編集を破棄して初期状態に戻す">🔄 リセット</button>
+            <a href="index.html" target="_blank" class="btn btn-primary" title="公開マップを別タブで開く">🌐 公開マップ</a>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- 都道府県セレクタ -->
+        <div class="pref-selector-card">
+            <div class="pref-select-label">
+                <span>📍 編集する都道府県:</span>
+                <select id="currentPrefSelect" class="pref-select" onchange="switchPref(this.value)"></select>
+            </div>
+            <div id="currentRegionBadge" class="region-badge-current">地区: -</div>
+        </div>
+
+        <!-- 📸 観光地・名所 -->
+        <div class="category-section">
+            <div class="category-header">
+                <div class="category-title">
+                    <span>📸 観光地・名所</span>
+                    <span id="sightseeingCount" class="category-count">0件</span>
+                </div>
+                <button type="button" class="btn btn-secondary" onclick="openItemModal('sightseeing', -1)">➕ 観光地追加</button>
+            </div>
+            <div id="sightseeingGrid" class="items-grid"></div>
+        </div>
+
+        <!-- 🍽️ ご当地グルメ・食べ物 -->
+        <div class="category-section">
+            <div class="category-header">
+                <div class="category-title">
+                    <span>🍽️ ご当地グルメ・食べ物</span>
+                    <span id="foodCount" class="category-count">0件</span>
+                </div>
+                <button type="button" class="btn btn-secondary" onclick="openItemModal('food', -1)">➕ グルメ追加</button>
+            </div>
+            <div id="foodGrid" class="items-grid"></div>
+        </div>
+
+        <!-- 🍶 地酒・お酒 -->
+        <div class="category-section">
+            <div class="category-header">
+                <div class="category-title">
+                    <span>🍶 地酒・お酒</span>
+                    <span id="drinkCount" class="category-count">0件</span>
+                </div>
+                <button type="button" class="btn btn-secondary" onclick="openItemModal('drink', -1)">➕ 地酒追加</button>
+            </div>
+            <div id="drinkGrid" class="items-grid"></div>
+        </div>
+
+        <!-- 💬 リスナーおすすめメモ・口コミ -->
+        <div class="category-section">
+            <div class="category-header">
+                <div class="category-title">
+                    <span>💬 リスナーおすすめメモ・口コミ</span>
+                    <span id="memoCount" class="category-count">0件</span>
+                </div>
+                <button type="button" class="btn btn-secondary" onclick="openMemoModal(-1)">➕ 口コミ追加</button>
+            </div>
+            <div id="memoGrid" style="display:flex; flex-direction:column; gap:10px;"></div>
+        </div>
+    </div>
+
+    <!-- アイテム追加/編集モーダル -->
+    <div id="itemModal" class="modal-backdrop" onclick="closeModalOnBackdrop(event, 'itemModal')">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3 id="itemModalTitle" class="modal-title">項目を編集</h3>
+                <button type="button" class="btn-secondary" style="border:none; background:none; font-size:20px; cursor:pointer;" onclick="closeModal('itemModal')">✕</button>
+            </div>
+            <form onsubmit="saveItem(event)">
+                <input type="hidden" id="modalCategory">
+                <input type="hidden" id="modalIndex">
+                <div class="form-group">
+                    <label class="form-label">項目・スポット名（漢字・カナ・英数）</label>
+                    <input type="text" id="modalItemName" class="form-input" placeholder="例: 巌美渓、水戸納豆" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">ふりがな・読み（任意）</label>
+                    <input type="text" id="modalItemRuby" class="form-input" placeholder="例: げんびけい、みとなっとう">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('itemModal')">キャンセル</button>
+                    <button type="submit" class="btn btn-primary">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- メモ追加/編集モーダル -->
+    <div id="memoModal" class="modal-backdrop" onclick="closeModalOnBackdrop(event, 'memoModal')">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3 id="memoModalTitle" class="modal-title">口コミ・おすすめメモを編集</h3>
+                <button type="button" class="btn-secondary" style="border:none; background:none; font-size:20px; cursor:pointer;" onclick="closeModal('memoModal')">✕</button>
+            </div>
+            <form onsubmit="saveMemo(event)">
+                <input type="hidden" id="modalMemoIndex">
+                <div class="form-group">
+                    <label class="form-label">対象スポット・名物名</label>
+                    <input type="text" id="modalMemoSpot" class="form-input" placeholder="例: 国営ひたち海浜公園" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">おすすめ内容・口コミ本文</label>
+                    <textarea id="modalMemoBody" class="form-textarea" placeholder="例: ネモフィラの見頃は4月下旬！早朝開園が狙い目です" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">投稿者ニックネーム（任意）</label>
+                    <input type="text" id="modalMemoAuthor" class="form-input" placeholder="例: フロリファンA">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('memoModal')">キャンセル</button>
+                    <button type="submit" class="btn btn-primary">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- GitHub直接保存モーダル -->
+    <div id="githubModal" class="modal-backdrop" onclick="closeModalOnBackdrop(event, 'githubModal')">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3 class="modal-title">🚀 GitHubへ直接コミット保存</h3>
+                <button type="button" class="btn-secondary" style="border:none; background:none; font-size:20px; cursor:pointer;" onclick="closeModal('githubModal')">✕</button>
+            </div>
+            <form onsubmit="commitToGitHub(event)">
+                <div class="form-group">
+                    <label class="form-label">GitHub Personal Access Token (PAT)</label>
+                    <input type="password" id="ghToken" class="form-input" placeholder="ghp_xxxxxxxxxxxx" required>
+                    <span style="font-size:11px; color:#78716c;">※ブラウザのlocalStorageに安全に保持されます</span>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">リポジトリ</label>
+                    <input type="text" id="ghRepo" class="form-input" value="mitchy-ym/patapata_travel_map_maker" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">ブランチ</label>
+                    <input type="text" id="ghBranch" class="form-input" value="main" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">コミットメッセージ</label>
+                    <input type="text" id="ghMessage" class="form-input" value="Update patamap_data.json via admin editor" required>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('githubModal')">キャンセル</button>
+                    <button type="submit" id="ghSubmitBtn" class="btn btn-github">GitHubに保存＆自動デプロイ</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- トースト通知 -->
+    <div id="toast" class="toast"></div>
+
+    <script>
+        // マスターデータ
+        const initialData = {json.dumps(prefectures_data, ensure_ascii=False)};
+        let currentData = JSON.parse(JSON.stringify(initialData));
+        let selectedPref = '北海道';
+
+        // 初期化
+        document.addEventListener('DOMContentLoaded', () => {{
+            initPrefSelector();
+            renderCurrentPref();
+            loadSavedGitHubSettings();
+        }});
+
+        function showToast(msg) {{
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.style.display = 'flex';
+            setTimeout(() => {{ t.style.display = 'none'; }}, 3000);
+        }}
+
+        // 都道府県セレクタ初期化
+        function initPrefSelector() {{
+            const sel = document.getElementById('currentPrefSelect');
+            sel.innerHTML = '';
+            
+            const regions = {{}};
+            Object.keys(currentData).forEach(pref => {{
+                const reg = currentData[pref]['地区'] || 'その他';
+                if (!regions[reg]) regions[reg] = [];
+                regions[reg].push(pref);
+            }});
+
+            for (let reg in regions) {{
+                const group = document.createElement('optgroup');
+                group.label = `【${{reg}}】`;
+                regions[reg].forEach(pref => {{
+                    const opt = document.createElement('option');
+                    opt.value = pref;
+                    opt.textContent = pref;
+                    group.appendChild(opt);
+                }});
+                sel.appendChild(group);
+            }}
+
+            sel.value = selectedPref;
+        }}
+
+        function switchPref(pref) {{
+            selectedPref = pref;
+            renderCurrentPref();
+        }}
+
+        // ルビ付きHTMLから「プレーン名」と「ふりがな」を抽出するユーティリティ
+        function parseRubyItem(rawItem) {{
+            if (!rawItem) return {{ name: '', ruby: '' }};
+            const match = rawItem.match(/<ruby>([^<]+)<rt>([^<]+)<\\/rt><\\/ruby>/);
+            if (match) {{
+                return {{ name: match[1], ruby: match[2] }};
+            }}
+            const plain = rawItem.replace(/<rt>[^<]*<\\/rt>/g, '').replace(/<[^>]+>/g, '').trim();
+            return {{ name: plain, ruby: '' }};
+        }}
+
+        function buildRubyItem(name, ruby) {{
+            if (!ruby) return name.trim();
+            return `<ruby>${{name.trim()}}<rt>${{ruby.trim()}}</rt></ruby>`;
+        }}
+
+        // 現在選択中の都道府県を描画
+        function renderCurrentPref() {{
+            const prefData = currentData[selectedPref];
+            if (!prefData) return;
+
+            document.getElementById('currentRegionBadge').textContent = `地区: ${{prefData['地区'] || 'その他'}}`;
+
+            renderCategoryGrid('sightseeing', '観光地', 'sightseeingGrid', 'sightseeingCount');
+            renderCategoryGrid('food', '食べ物', 'foodGrid', 'foodCount');
+            renderCategoryGrid('drink', 'お酒', 'drinkGrid', 'drinkCount');
+            renderMemoGrid();
+        }}
+
+        function getCategoryItems(catKey) {{
+            const val = currentData[selectedPref][catKey] || '';
+            if (!val || val === 'なし') return [];
+            return val.replace(/\\n/g, '、').replace(/,/g, '、').split('、').map(s => s.trim()).filter(s => s);
+        }}
+
+        function setCategoryItems(catKey, items) {{
+            if (items.length === 0) {{
+                currentData[selectedPref][catKey] = 'なし';
+            }} else {{
+                currentData[selectedPref][catKey] = items.join('、');
+            }}
+            renderCurrentPref();
+        }}
+
+        function renderCategoryGrid(cat, catKey, gridId, countId) {{
+            const items = getCategoryItems(catKey);
+            const grid = document.getElementById(gridId);
+            document.getElementById(countId).textContent = `${{items.length}}件`;
+            grid.innerHTML = '';
+
+            if (items.length === 0) {{
+                grid.innerHTML = `<span style="color:#999; font-size:13px; font-style:italic;">データがありません</span>`;
+                return;
+            }}
+
+            items.forEach((item, idx) => {{
+                const parsed = parseRubyItem(item);
+                const card = document.createElement('div');
+                card.className = 'item-card';
+                card.innerHTML = `
+                    <div class="item-card-text">${{item}}</div>
+                    <div class="item-card-actions">
+                        <button type="button" class="mini-btn edit-btn" onclick="openItemModal('${{cat}}', ${{idx}})" title="編集">✏️</button>
+                        <button type="button" class="mini-btn delete-btn" onclick="deleteItem('${{catKey}}', ${{idx}})" title="削除">🗑️</button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            }});
+        }}
+
+        function renderMemoGrid() {{
+            const rawMemo = currentData[selectedPref]['メモ'] || '';
+            const grid = document.getElementById('memoGrid');
+            const countEl = document.getElementById('memoCount');
+
+            if (!rawMemo || rawMemo === 'なし') {{
+                countEl.textContent = '0件';
+                grid.innerHTML = `<span style="color:#999; font-size:13px; font-style:italic;">登録された口コミはありません</span>`;
+                return;
+            }}
+
+            const entries = rawMemo.replace(/\\n/g, '、').split('、').map(s => s.trim()).filter(s => s);
+            countEl.textContent = `${{entries.length}}件`;
+            grid.innerHTML = '';
+
+            entries.forEach((entry, idx) => {{
+                let spot = '';
+                let body = entry;
+                let author = '';
+
+                const p1 = entry.split(/[:：]/);
+                if (p1.length >= 2) {{
+                    spot = p1[0].trim();
+                    body = p1.slice(1).join(':').trim();
+                }}
+                const p2 = body.match(/^(.*?)[（\\(]by\\s*([^）\\)]+)[）\\)]$/);
+                if (p2) {{
+                    body = p2[1].trim();
+                    author = p2[2].trim();
+                }}
+
+                const card = document.createElement('div');
+                card.className = 'memo-card';
+                card.innerHTML = `
+                    <div style="flex:1;">
+                        ${{spot ? `<div class="memo-spot">📍 ${{spot}}</div>` : ''}}
+                        <div class="memo-body">${{body}}</div>
+                        ${{author ? `<div class="memo-author">投稿者: ${{author}}</div>` : ''}}
+                    </div>
+                    <div class="item-card-actions">
+                        <button type="button" class="mini-btn edit-btn" onclick="openMemoModal(${{idx}})" title="編集">✏️</button>
+                        <button type="button" class="mini-btn delete-btn" onclick="deleteMemo(${{idx}})" title="削除">🗑️</button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            }});
+        }}
+
+        // アイテムモーダル制御
+        function openItemModal(cat, idx) {{
+            const catKey = cat === 'food' ? '食べ物' : cat === 'drink' ? 'お酒' : '観光地';
+            const catLabel = cat === 'food' ? 'グルメ' : cat === 'drink' ? '地酒' : '観光地';
+            document.getElementById('modalCategory').value = cat;
+            document.getElementById('modalIndex').value = idx;
+
+            if (idx >= 0) {{
+                const items = getCategoryItems(catKey);
+                const parsed = parseRubyItem(items[idx] || '');
+                document.getElementById('itemModalTitle').textContent = `【${{selectedPref}}】${{catLabel}}を編集`;
+                document.getElementById('modalItemName').value = parsed.name;
+                document.getElementById('modalItemRuby').value = parsed.ruby;
+            }} else {{
+                document.getElementById('itemModalTitle').textContent = `【${{selectedPref}}】新しい${{catLabel}}を追加`;
+                document.getElementById('modalItemName').value = '';
+                document.getElementById('modalItemRuby').value = '';
+            }}
+
+            document.getElementById('itemModal').style.display = 'flex';
+        }}
+
+        function saveItem(e) {{
+            e.preventDefault();
+            const cat = document.getElementById('modalCategory').value;
+            const idx = parseInt(document.getElementById('modalIndex').value, 10);
+            const catKey = cat === 'food' ? '食べ物' : cat === 'drink' ? 'お酒' : '観光地';
+            const name = document.getElementById('modalItemName').value.trim();
+            const ruby = document.getElementById('modalItemRuby').value.trim();
+
+            if (!name) return;
+            const finalItem = buildRubyItem(name, ruby);
+            const items = getCategoryItems(catKey);
+
+            if (idx >= 0) {{
+                items[idx] = finalItem;
+            }} else {{
+                items.push(finalItem);
+            }}
+
+            setCategoryItems(catKey, items);
+            closeModal('itemModal');
+            showToast(`✅ 「${{name}}」を保存しました`);
+        }}
+
+        function deleteItem(catKey, idx) {{
+            const items = getCategoryItems(catKey);
+            const item = items[idx];
+            const parsed = parseRubyItem(item);
+            if (confirm(`本当に「${{parsed.name}}」を削除しますか？`)) {{
+                items.splice(idx, 1);
+                setCategoryItems(catKey, items);
+                showToast(`🗑️ 「${{parsed.name}}」を削除しました`);
+            }}
+        }}
+
+        // メモモーダル制御
+        function openMemoModal(idx) {{
+            document.getElementById('modalMemoIndex').value = idx;
+            const rawMemo = currentData[selectedPref]['メモ'] || '';
+            const entries = (!rawMemo || rawMemo === 'なし') ? [] : rawMemo.replace(/\\n/g, '、').split('、').map(s => s.trim()).filter(s => s);
+
+            if (idx >= 0) {{
+                document.getElementById('memoModalTitle').textContent = `【${{selectedPref}}】口コミ・メモを編集`;
+                const entry = entries[idx] || '';
+                let spot = '';
+                let body = entry;
+                let author = '';
+
+                const p1 = entry.split(/[:：]/);
+                if (p1.length >= 2) {{
+                    spot = p1[0].trim();
+                    body = p1.slice(1).join(':').trim();
+                }}
+                const p2 = body.match(/^(.*?)[（\\(]by\\s*([^）\\)]+)[）\\)]$/);
+                if (p2) {{
+                    body = p2[1].trim();
+                    author = p2[2].trim();
+                }}
+
+                document.getElementById('modalMemoSpot').value = spot;
+                document.getElementById('modalMemoBody').value = body;
+                document.getElementById('modalMemoAuthor').value = author;
+            }} else {{
+                document.getElementById('memoModalTitle').textContent = `【${{selectedPref}}】新しい口コミ・メモを追加`;
+                document.getElementById('modalMemoSpot').value = '';
+                document.getElementById('modalMemoBody').value = '';
+                document.getElementById('modalMemoAuthor').value = '';
+            }}
+
+            document.getElementById('memoModal').style.display = 'flex';
+        }}
+
+        function saveMemo(e) {{
+            e.preventDefault();
+            const idx = parseInt(document.getElementById('modalMemoIndex').value, 10);
+            const spot = document.getElementById('modalMemoSpot').value.trim();
+            const body = document.getElementById('modalMemoBody').value.trim();
+            const author = document.getElementById('modalMemoAuthor').value.trim();
+
+            if (!spot || !body) return;
+
+            let entry = `${{spot}}: ${{body}}`;
+            if (author) entry += `（by ${{author}}）`;
+
+            const rawMemo = currentData[selectedPref]['メモ'] || '';
+            const entries = (!rawMemo || rawMemo === 'なし') ? [] : rawMemo.replace(/\\n/g, '、').split('、').map(s => s.trim()).filter(s => s);
+
+            if (idx >= 0) {{
+                entries[idx] = entry;
+            }} else {{
+                entries.push(entry);
+            }}
+
+            currentData[selectedPref]['メモ'] = entries.length === 0 ? 'なし' : entries.join('、');
+            renderMemoGrid();
+            closeModal('memoModal');
+            showToast(`✅ 口コミを保存しました`);
+        }}
+
+        function deleteMemo(idx) {{
+            const rawMemo = currentData[selectedPref]['メモ'] || '';
+            const entries = (!rawMemo || rawMemo === 'なし') ? [] : rawMemo.replace(/\\n/g, '、').split('、').map(s => s.trim()).filter(s => s);
+            if (confirm('この口コミを削除しますか？')) {{
+                entries.splice(idx, 1);
+                currentData[selectedPref]['メモ'] = entries.length === 0 ? 'なし' : entries.join('、');
+                renderMemoGrid();
+                showToast('🗑️ 口コミを削除しました');
+            }}
+        }}
+
+        function closeModal(id) {{
+            document.getElementById(id).style.display = 'none';
+        }}
+
+        function closeModalOnBackdrop(e, id) {{
+            if (e.target.id === id) closeModal(id);
+        }}
+
+        // JSONエクスポート（ダウンロード）
+        function exportJsonFile() {{
+            const jsonStr = JSON.stringify(currentData, null, 2);
+            const blob = new Blob([jsonStr], {{ type: 'application/json;charset=utf-8' }});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'patamap_data.json';
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('📥 patamap_data.json をダウンロードしました');
+        }}
+
+        // JSONコピー
+        function copyJsonToClipboard() {{
+            const jsonStr = JSON.stringify(currentData, null, 2);
+            navigator.clipboard.writeText(jsonStr).then(() => {{
+                showToast('📋 JSONをクリップボードにコピーしました');
+            }}).catch(() => {{
+                alert('クリップボードへのコピーに失敗しました');
+            }});
+        }}
+
+        // 全リセット
+        function resetAllChanges() {{
+            if (confirm('すべての未保存の編集を破棄して、初期状態に戻しますか？')) {{
+                currentData = JSON.parse(JSON.stringify(initialData));
+                renderCurrentPref();
+                showToast('🔄 データを初期状態にリセットしました');
+            }}
+        }}
+
+        // GitHub保存モーダル
+        function openGithubModal() {{
+            document.getElementById('githubModal').style.display = 'flex';
+        }}
+
+        function loadSavedGitHubSettings() {{
+            const token = localStorage.getItem('patamap_gh_token');
+            const repo = localStorage.getItem('patamap_gh_repo');
+            const branch = localStorage.getItem('patamap_gh_branch');
+            if (token) document.getElementById('ghToken').value = token;
+            if (repo) document.getElementById('ghRepo').value = repo;
+            if (branch) document.getElementById('ghBranch').value = branch;
+        }}
+
+        async function commitToGitHub(e) {{
+            e.preventDefault();
+            const token = document.getElementById('ghToken').value.trim();
+            const repo = document.getElementById('ghRepo').value.trim();
+            const branch = document.getElementById('ghBranch').value.trim();
+            const message = document.getElementById('ghMessage').value.trim();
+            const btn = document.getElementById('ghSubmitBtn');
+
+            if (!token || !repo || !branch || !message) return;
+
+            localStorage.setItem('patamap_gh_token', token);
+            localStorage.setItem('patamap_gh_repo', repo);
+            localStorage.setItem('patamap_gh_branch', branch);
+
+            btn.disabled = true;
+            btn.textContent = '⏳ 保存中...';
+
+            try {{
+                // 1. 最新のファイルのSHAを取得
+                const getUrl = `https://api.github.com/repos/${{repo}}/contents/patamap_data.json?ref=${{branch}}&t=${{Date.now()}}`;
+                const getRes = await fetch(getUrl, {{
+                    headers: {{
+                        'Authorization': `token ${{token}}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }}
+                }});
+
+                if (!getRes.ok) {{
+                    throw new Error(`GitHub API エラー (GET): ${{getRes.status}} ${{getRes.statusText}}`);
+                }}
+                const getData = await getRes.json();
+                const sha = getData.sha;
+
+                // 2. 更新データをBase64エンコード
+                const jsonContent = JSON.stringify(currentData, null, 2);
+                const utf8Bytes = new TextEncoder().encode(jsonContent);
+                let binaryStr = '';
+                for (let i = 0; i < utf8Bytes.length; i++) {{
+                    binaryStr += String.fromCharCode(utf8Bytes[i]);
+                }}
+                const base64Content = btoa(binaryStr);
+
+                // 3. PUTでコミット更新
+                const putUrl = `https://api.github.com/repos/${{repo}}/contents/patamap_data.json`;
+                const putRes = await fetch(putUrl, {{
+                    method: 'PUT',
+                    headers: {{
+                        'Authorization': `token ${{token}}`,
+                        'Accept': 'application/vnd.github.v3+json',
+                        'Content-Type': 'application/json'
+                    }},
+                    body: JSON.stringify({{
+                        message: message,
+                        content: base64Content,
+                        sha: sha,
+                        branch: branch
+                    }})
+                }});
+
+                if (!putRes.ok) {{
+                    const errData = await putRes.json();
+                    throw new Error(`GitHub API エラー (PUT): ${{putRes.status}} ${{errData.message || putRes.statusText}}`);
+                }}
+
+                closeModal('githubModal');
+                alert('🎉 GitHub リポジトリへの保存が完了しました！\\n\\nGitHub Actions が自動で本番サイトの再ビルドを開始しました。（約15秒で反映されます）');
+                showToast('🚀 GitHubへの保存完了！');
+            }} catch (err) {{
+                alert('❌ 保存に失敗しました:\\n' + err.message);
+            }} finally {{
+                btn.disabled = false;
+                btn.textContent = 'GitHubに保存＆自動デプロイ';
+            }}
+        }}
+    </script>
+</body>
+</html>
+"""
+
+    with open(output_html_path, "w", encoding="utf-8") as f:
+        f.write(admin_html_content)
+
+    print(f"[ステップ2 完了] 管理者専用データ編集画面HTMLを生成しました: {os.path.abspath(output_html_path)}")
+    return output_html_path
+
+
+# ==============================================================================
+# 4. メインエントリーポイント
 # ==============================================================================
 
 def main():
@@ -1423,6 +2448,11 @@ def main():
         json_data_path="patamap_data.json",
         geojson_path="japan.geojson",
         output_html_path="index.html"
+    )
+
+    admin_file = create_admin_editor_html(
+        json_data_path="patamap_data.json",
+        output_html_path="admin.html"
     )
 
     is_ci = os.environ.get("CI", "false").lower() in ("true", "1")
@@ -1437,3 +2467,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
