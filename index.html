@@ -823,6 +823,10 @@
                     <input type="text" id="modalItemTextInput" class="form-input" placeholder="例: 大洗マリンタワー、水戸納豆">
                     <select id="modalItemSelectInput" class="form-select" style="display:none;"></select>
                 </div>
+                <div class="form-group" id="modalItemRubyGroup">
+                    <label class="form-label">ふりがな・読み（任意）</label>
+                    <input type="text" id="modalItemRubyInput" class="form-input" placeholder="例: おおあらいまりんたわー、みとなっとう">
+                </div>
                 <div class="form-group">
                     <label class="form-label">おすすめメモ・口コミ（任意）</label>
                     <textarea id="modalMemo" class="form-textarea" placeholder="例: 展望台から太平洋が一望できて夕日が最高です！"></textarea>
@@ -1043,6 +1047,10 @@
             document.getElementById('modalMemo').value = '';
             document.getElementById('modalAuthor').value = '';
 
+            const rubyGroup = document.getElementById('modalItemRubyGroup');
+            const rubyInput = document.getElementById('modalItemRubyInput');
+            if (rubyInput) rubyInput.value = '';
+
             if (itemName) {
                 // 口コミ追加モード：スポット名は選択式（自由編集不可）
                 titleEl.innerHTML = `「${itemName}」に口コミを追加`;
@@ -1051,6 +1059,7 @@
                 textInput.removeAttribute('required');
                 selectInput.style.display = 'block';
                 selectInput.setAttribute('required', 'required');
+                if (rubyGroup) rubyGroup.style.display = 'none';
 
                 // 該当都道府県・カテゴリの既存スポット一覧をオプションとして生成
                 selectInput.innerHTML = '';
@@ -1072,7 +1081,7 @@
                 prefEl.disabled = true;
                 catEl.disabled = true;
             } else {
-                // 新規項目追加モード：スポット名は自由入力
+                // 新規項目追加モード：スポット名は自由入力＋ふりがな入力
                 const catLabel = cat === 'food' ? 'グルメ' : cat === 'drink' ? '地酒' : '観光地';
                 titleEl.innerHTML = `【${pref}】に新しい${catLabel}を追加`;
                 labelEl.innerHTML = `項目・スポット名`;
@@ -1081,6 +1090,7 @@
                 textInput.style.display = 'block';
                 textInput.setAttribute('required', 'required');
                 textInput.value = '';
+                if (rubyGroup) rubyGroup.style.display = 'flex';
                 prefEl.disabled = false;
                 catEl.disabled = false;
             }
@@ -1105,12 +1115,20 @@
             const cat = catEl.value;
             const textInput = document.getElementById('modalItemTextInput');
             const selectInput = document.getElementById('modalItemSelectInput');
+            const rubyInput = document.getElementById('modalItemRubyInput');
             const isCommentMode = (selectInput.style.display !== 'none');
             const itemName = isCommentMode ? selectInput.value.trim() : textInput.value.trim();
+            const itemRuby = (!isCommentMode && rubyInput) ? rubyInput.value.trim() : '';
             const memo = document.getElementById('modalMemo').value.trim();
             const author = document.getElementById('modalAuthor').value.trim();
 
             if (!pref || !itemName) return;
+
+            // ふりがなが入力されている場合はルビタグ付きで整形
+            let finalItemName = itemName;
+            if (!isCommentMode && itemRuby) {
+                finalItemName = `<ruby>${itemName}<rt>${itemRuby}</rt></ruby>`;
+            }
 
             // 送信用に disabled を解除
             prefEl.disabled = false;
@@ -1121,9 +1139,9 @@
                 const catKey = cat === 'food' ? '食べ物' : cat === 'drink' ? 'お酒' : '観光地';
                 if (!isCommentMode) {
                     if (!patamapData[pref][catKey] || patamapData[pref][catKey] === 'なし') {
-                        patamapData[pref][catKey] = itemName;
+                        patamapData[pref][catKey] = finalItemName;
                     } else if (!patamapData[pref][catKey].includes(itemName)) {
-                        patamapData[pref][catKey] += '、' + itemName;
+                        patamapData[pref][catKey] += '、' + finalItemName;
                     }
                 }
                 if (memo) {
