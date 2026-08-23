@@ -173,6 +173,10 @@ def create_interactive_map_html(json_data_path="patamap_data.json", geojson_path
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>リスナーと作る！全国観光マップ フロリの47都道府県パタパタ旅行企画</title>
+    <!-- Google Fonts: Zen Maru Gothic（和紙調に馴染む上品な丸ゴシック） -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&display=swap" rel="stylesheet">
     <!-- EChartsライブラリの読み込み -->
     <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
     <style>
@@ -182,7 +186,7 @@ def create_interactive_map_html(json_data_path="patamap_data.json", geojson_path
         body {{
             margin: 0;
             padding: 0;
-            font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic UI", "Yu Gothic", "BIZ UDPGothic", Meiryo, -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: "Zen Maru Gothic", "Hiragino Maru Gothic ProN", "Hiragino Sans", "Yu Gothic UI", "Yu Gothic", Meiryo, sans-serif;
             background-color: {MAP_BG_COLOR};
             color: #333;
             overflow: hidden;
