@@ -22,54 +22,54 @@ import webbrowser
 # 1. 地図・デザイン設定
 # ==============================================================================
 
-MAP_BG_COLOR = "#fcf9f2"          # 地図全体の背景色（和紙のような温かみのあるオフホワイト）
+MAP_BG_COLOR = "#f9f6f0"          # 地図全体の背景色（生成り・鳥の子紙のような温かみのある和紙色）
 INITIAL_CENTER = [137.5, 37.5]   # 初期の日本地図中心座標 [経度, 緯度]
 INITIAL_ZOOM = 1.25              # 全体表示時のズームレベル
 AUTO_OPEN_BROWSER = True         # 生成後にデフォルトブラウザで自動オープンするか
 
-# 地区ごとのカラーパレット（WCAG視認性対応）
+# 地区ごとのカラーパレット（日本の伝統色・和色パレット）
 REGION_COLORS = {
     "北海道+東北": {
-        "color": "#93C5FD",        # 淡いスカイブルー
-        "hover": "#60A5FA",
-        "text": "#1D4ED8",
-        "badge_bg": "#EFF6FF"
+        "color": "#9bc4e2",        # 藍・水浅葱（みずあさぎ）
+        "hover": "#6aa5d8",
+        "text": "#1e4e79",
+        "badge_bg": "#f0f7fc"
     },
     "関東": {
-        "color": "#FDA4AF",        # 淡いローズピンク
-        "hover": "#F43F5E",
-        "text": "#BE123C",
-        "badge_bg": "#FFF1F2"
+        "color": "#f7b2bd",        # 撫子（なでしこ）・桜色
+        "hover": "#ee7b8e",
+        "text": "#9e2a3b",
+        "badge_bg": "#fdf2f4"
     },
     "中部": {
-        "color": "#A7F3D0",        # 淡いミントグリーン
-        "hover": "#34D399",
-        "text": "#047857",
-        "badge_bg": "#ECFDF5"
+        "color": "#aeddb1",        # 若草（わかくさ）・萌黄
+        "hover": "#6ec073",
+        "text": "#236329",
+        "badge_bg": "#f2faf3"
     },
     "関西": {
-        "color": "#D8B4FE",        # 淡いパープル
-        "hover": "#A855F7",
-        "text": "#7E22CE",
-        "badge_bg": "#FAF5FF"
+        "color": "#d2b4de",        # 藤（ふじ）・桔梗
+        "hover": "#af7ac5",
+        "text": "#5b2c6f",
+        "badge_bg": "#f9f3fb"
     },
     "中国+四国": {
-        "color": "#FDBA74",        # 淡いコーラルオレンジ
-        "hover": "#FB923C",
-        "text": "#C2410C",
-        "badge_bg": "#FFF7ED"
+        "color": "#f9cb9c",        # 山吹（やまぶき）・杏色
+        "hover": "#f39c12",
+        "text": "#935116",
+        "badge_bg": "#fdf6ee"
     },
     "九州+沖縄": {
-        "color": "#99F6E4",        # 淡いターコイズグリーン
-        "hover": "#2DD4BF",
-        "text": "#0F766E",
-        "badge_bg": "#F0FDFA"
+        "color": "#a2ded0",        # 浅葱（あさぎ）・青緑
+        "hover": "#48c9b0",
+        "text": "#117864",
+        "badge_bg": "#f0faf8"
     },
     "その他": {
-        "color": "#E5E7EB",
-        "hover": "#CBD5E1",
+        "color": "#e2ded6",
+        "hover": "#cbd5e1",
         "text": "#475569",
-        "badge_bg": "#F8FAFC"
+        "badge_bg": "#f8fafc"
     }
 }
 
@@ -112,6 +112,15 @@ REGION_CENTERS = {
     "九州+沖縄": {"center": [130.2, 32.2], "zoom": 3.5}
 }
 
+REGION_PREFECTURES = {
+    "北海道+東北": ["北海道", "青森県", "岩手県", "宮城県", "秋田県", "山形県", "福島県"],
+    "関東": ["茨城県", "栃木県", "群馬県", "埼玉県", "千葉県", "東京都", "神奈川県"],
+    "中部": ["新潟県", "富山県", "石川県", "福井県", "山梨県", "長野県", "岐阜県", "静岡県", "愛知県", "三重県"],
+    "関西": ["滋賀県", "京都府", "大阪府", "兵庫県", "奈良県", "和歌山県"],
+    "中国+四国": ["鳥取県", "島根県", "岡山県", "広島県", "山口県", "徳島県", "香川県", "愛媛県", "高知県"],
+    "九州+沖縄": ["福岡県", "佐賀県", "長崎県", "熊本県", "大分県", "宮崎県", "鹿児島県", "沖縄県"]
+}
+
 # ==============================================================================
 # 2. 地図HTML生成関数
 # ==============================================================================
@@ -149,6 +158,15 @@ def create_interactive_map_html(json_data_path="patamap_data.json", geojson_path
         legend_badges.append(badge)
     legend_badges_html = "".join(legend_badges)
 
+    # 都道府県プルダウンの地区別グルーピングHTML生成（optgroup）
+    pref_options = ['<option value="">都道府県を選択してジャンプ...</option>']
+    for region_name, prefs in REGION_PREFECTURES.items():
+        pref_options.append(f'<optgroup label="── {region_name} ──">')
+        for p in prefs:
+            pref_options.append(f'<option value="{p}">{p}</option>')
+        pref_options.append('</optgroup>')
+    pref_select_options_html = "\n                    ".join(pref_options)
+
     html_content = f"""<!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -179,8 +197,11 @@ def create_interactive_map_html(json_data_path="patamap_data.json", geojson_path
             display: flex;
             justify-content: center;
             align-items: center;
-            background-image: radial-gradient(#e0e0e0 1px, transparent 1px);
-            background-size: 20px 20px;
+            background-color: {MAP_BG_COLOR};
+            background-image: 
+                radial-gradient(#dcd5c7 1.2px, transparent 1.2px),
+                linear-gradient(135deg, rgba(255, 255, 255, 0.5) 0%, rgba(244, 239, 230, 0.3) 100%);
+            background-size: 24px 24px, 100% 100%;
             position: relative;
         }}
         #main {{
@@ -188,18 +209,18 @@ def create_interactive_map_html(json_data_path="patamap_data.json", geojson_path
             height: 100%;
         }}
 
-        /* 左上フローティングカード */
+        /* 左上フローティングカード（和紙すりガラス調） */
         .floating-card {{
             position: absolute;
             top: 20px;
             left: 20px;
             z-index: 100;
-            background: rgba(255, 255, 255, 0.96);
+            background: rgba(255, 253, 248, 0.95);
             backdrop-filter: blur(12px);
             padding: 16px 18px 12px 18px;
-            border-radius: 20px;
-            box-shadow: 0 12px 36px rgba(0, 0, 0, 0.12);
-            border: 2px solid #ffccd5;
+            border-radius: 18px;
+            box-shadow: 0 12px 36px rgba(120, 95, 70, 0.12), 0 2px 8px rgba(120, 95, 70, 0.06);
+            border: 2px solid #e5d7c7;
             width: 350px;
             max-width: calc(100vw - 40px);
             display: flex;
@@ -214,8 +235,8 @@ def create_interactive_map_html(json_data_path="patamap_data.json", geojson_path
         .card-title-main {{
             display: block;
             font-size: 16.5px;
-            font-weight: bold;
-            color: #e11d48;
+            font-weight: 800;
+            color: #b91c1c; /* 茜・朱赤 */
             letter-spacing: 0;
             line-height: 1.25;
             white-space: nowrap;
@@ -225,8 +246,8 @@ def create_interactive_map_html(json_data_path="patamap_data.json", geojson_path
         .card-title-sub {{
             display: block;
             font-size: 11.5px;
-            color: #64748b;
-            font-weight: 500;
+            color: #786d5f;
+            font-weight: 600;
             margin-top: 3px;
             white-space: nowrap;
             width: 100%;
@@ -248,11 +269,11 @@ def create_interactive_map_html(json_data_path="patamap_data.json", geojson_path
             cursor: pointer;
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             outline: none;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
         }}
         .region-chip:hover {{
             transform: translateY(-2px) scale(1.02);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+            box-shadow: 0 4px 10px rgba(120,90,60,0.15);
         }}
         .region-chip .dot {{
             width: 7px;
@@ -269,40 +290,52 @@ def create_interactive_map_html(json_data_path="patamap_data.json", geojson_path
             flex: 1;
             padding: 6px 10px;
             border-radius: 10px;
-            border: 1.5px solid #cbd5e1;
+            border: 1.5px solid #dcd1c4;
             font-size: 12px;
             font-weight: bold;
-            color: #334155;
-            background: #fff;
+            color: #3e3830;
+            background: #fffdfa;
             outline: none;
             cursor: pointer;
             transition: all 0.2s ease;
         }}
         .pref-select:focus {{
-            border-color: #f43f5e;
-            box-shadow: 0 0 0 3px rgba(244, 63, 94, 0.2);
+            border-color: #b91c1c;
+            box-shadow: 0 0 0 3px rgba(185, 28, 28, 0.15);
+        }}
+        .pref-select optgroup {{
+            font-weight: 700;
+            color: #b91c1c;
+            background: #fdfcf9;
+            font-style: normal;
+        }}
+        .pref-select option {{
+            font-weight: 500;
+            color: #2b2b2b;
+            background: #ffffff;
+            padding: 4px 8px;
         }}
         .btn-all-japan {{
             padding: 6px 12px;
             border-radius: 10px;
             border: none;
-            background: #f43f5e;
+            background: #b91c1c;
             color: #fff;
             font-size: 12px;
             font-weight: bold;
             cursor: pointer;
-            box-shadow: 0 2px 8px rgba(244, 63, 94, 0.3);
+            box-shadow: 0 2px 8px rgba(185, 28, 28, 0.25);
             transition: all 0.2s ease;
             white-space: nowrap;
         }}
         .btn-all-japan:hover {{
-            background: #e11d48;
+            background: #991b1b;
             transform: translateY(-1px);
         }}
         .card-footer-tip {{
             font-size: 10.5px;
-            color: #475569;
-            background: #f8fafc;
+            color: #5c5346;
+            background: #fbf8f2;
             border-radius: 10px;
             padding: 7px 10px;
             margin-top: 2px;
@@ -311,7 +344,7 @@ def create_interactive_map_html(json_data_path="patamap_data.json", geojson_path
             row-gap: 4px;
             column-gap: 0;
             align-items: center;
-            border: 1px solid #f1f5f9;
+            border: 1px solid #eee5d8;
         }}
         .tip-icon {{
             display: inline-flex;
@@ -322,19 +355,19 @@ def create_interactive_map_html(json_data_path="patamap_data.json", geojson_path
         }}
         .tip-label {{
             font-weight: 600;
-            color: #334155;
+            color: #3e3830;
             white-space: nowrap;
         }}
         .tip-sep {{
-            color: #94a3b8;
+            color: #a89f91;
             text-align: center;
         }}
         .tip-desc {{
-            color: #64748b;
+            color: #786d5f;
             white-space: nowrap;
         }}
 
-        /* ツールチップ内のカスタムスタイル（全漢字ルビ＆リッチ対話カード） */
+        /* ツールチップ内のカスタムスタイル（和紙掛け紙風リッチ対話カード） */
         .tooltip-card {{
             padding: 14px 10px 14px 15px;
             width: 350px;
@@ -345,10 +378,11 @@ def create_interactive_map_html(json_data_path="patamap_data.json", geojson_path
             font-size: 13px;
             box-sizing: border-box;
             border-radius: 14px;
+            background: #fdfcf9;
             scrollbar-width: thin;
-            scrollbar-color: #cbd5e1 transparent;
+            scrollbar-color: #d1c7b8 transparent;
         }}
-        /* スタイリッシュなカスタムスクロールバー（枠線内に完璧に収める） */
+        /* スタイリッシュな和紙風スクロールバー */
         .tooltip-card::-webkit-scrollbar {{
             width: 5px;
         }}
@@ -357,16 +391,16 @@ def create_interactive_map_html(json_data_path="patamap_data.json", geojson_path
             margin: 10px 0;
         }}
         .tooltip-card::-webkit-scrollbar-thumb {{
-            background: #cbd5e1;
+            background: #d1c7b8;
             border-radius: 10px;
         }}
         .tooltip-card::-webkit-scrollbar-thumb:hover {{
-            background: #94a3b8;
+            background: #b5a998;
         }}
 
         .tooltip-header {{
             margin: 0 0 10px 0;
-            border-bottom: 2px dashed #f43f5e;
+            border-bottom: 2px dashed #b91c1c;
             padding-bottom: 6px;
             display: flex;
             justify-content: space-between;
@@ -375,7 +409,7 @@ def create_interactive_map_html(json_data_path="patamap_data.json", geojson_path
         .tooltip-pref-title {{
             font-size: 18px;
             font-weight: bold;
-            color: #e11d48;
+            color: #b91c1c;
             display: flex;
             align-items: center;
             gap: 6px;
@@ -400,23 +434,23 @@ def create_interactive_map_html(json_data_path="patamap_data.json", geojson_path
         .tooltip-title-badge {{
             font-size: 10px;
             font-weight: normal;
-            color: #94a3b8;
+            color: #8c8273;
         }}
-        .sightseeing-title {{ color: #15803d; }}
-        .food-title {{ color: #c2410c; }}
-        .drink-title {{ color: #0369a1; }}
+        .sightseeing-title {{ color: #196f3d; }} /* 常磐緑 */
+        .food-title {{ color: #b95000; }}        /* 柿色・黄丹 */
+        .drink-title {{ color: #1a5276; }}       /* 藍鉄 */
         .tooltip-content {{
             font-size: 12.5px;
-            background: #f8fafc;
+            background: #fdfcf9;
             padding: 6px 8px;
             border-radius: 8px;
             border-left: 3.5px solid #ccc;
             max-height: none;
             overflow: visible;
         }}
-        .sightseeing-box {{ background: #f0fdf4; border-left-color: #4ade80; }}
-        .food-box {{ background: #fffbeb; border-left-color: #fbbf24; }}
-        .drink-box {{ background: #f0f9ff; border-left-color: #38bdf8; }}
+        .sightseeing-box {{ background: #f2faf4; border-left-color: #52be80; }}
+        .food-box {{ background: #fdf8ee; border-left-color: #f39c12; }}
+        .drink-box {{ background: #f0f7fb; border-left-color: #5499c7; }}
 
         /* モバイル・レスポンシブ最適化 */
         @media (max-width: 640px) {{
@@ -538,8 +572,7 @@ def create_interactive_map_html(json_data_path="patamap_data.json", geojson_path
             </div>
             <div class="search-container">
                 <select id="pref-select" class="pref-select" onchange="jumpToPref(this.value)">
-                    <option value="">都道府県を選択してジャンプ...</option>
-                    {"".join([f'<option value="{p}">{p}</option>' for p in ALL_PREFECTURES])}
+                    {pref_select_options_html}
                 </select>
                 <button class="btn-all-japan" onclick="resetToJapan()" title="日本全体表示に戻す">全体</button>
             </div>
@@ -688,13 +721,13 @@ def create_interactive_map_html(json_data_path="patamap_data.json", geojson_path
                 trigger: 'item',
                 enterable: true,
                 hideDelay: 300,
-                backgroundColor: 'rgba(255, 255, 255, 0.98)',
-                borderColor: '#f43f5e',
+                backgroundColor: 'rgba(255, 253, 248, 0.98)',
+                borderColor: '#b91c1c',
                 borderWidth: 2,
                 padding: 0,
                 borderRadius: 14,
-                extraCssText: 'box-shadow: 0 10px 28px rgba(0,0,0,0.18); overflow: hidden; border-radius: 14px;',
-                textStyle: {{ color: '#333' }},
+                extraCssText: 'box-shadow: 0 10px 28px rgba(120,95,70,0.18); overflow: hidden; border-radius: 14px;',
+                textStyle: {{ color: '#2b2b2b' }},
                 position: function (point, params, dom, rect, size) {{
                     const x = point[0];
                     const y = point[1];
@@ -738,24 +771,15 @@ def create_interactive_map_html(json_data_path="patamap_data.json", geojson_path
                                     </span>
                                 </div>
                                 <div class="tooltip-section">
-                                    <div class="tooltip-title sightseeing-title">
-                                        <span>📸 観光地・名所</span>
-                                        <span class="tooltip-title-badge">🗺️ 地図 ＆ 🔍 検索</span>
-                                    </div>
+                                    <div class="tooltip-title sightseeing-title">📸 観光地・名所</div>
                                     <div class="tooltip-content sightseeing-box">${{sightHtml}}</div>
                                 </div>
                                 <div class="tooltip-section">
-                                    <div class="tooltip-title food-title">
-                                        <span>🍽️ ご当地グルメ・食べ物</span>
-                                        <span class="tooltip-title-badge">🔍 検索 ＆ 🗺️ 地図</span>
-                                    </div>
+                                    <div class="tooltip-title food-title">🍽️ ご当地グルメ・食べ物</div>
                                     <div class="tooltip-content food-box">${{foodHtml}}</div>
                                 </div>
                                 <div class="tooltip-section">
-                                    <div class="tooltip-title drink-title">
-                                        <span>🍶 地酒・お酒</span>
-                                        <span class="tooltip-title-badge">🔍 検索連動</span>
-                                    </div>
+                                    <div class="tooltip-title drink-title">🍶 地酒・お酒</div>
                                     <div class="tooltip-content drink-box">${{drinkHtml}}</div>
                                 </div>
                             </div>
