@@ -511,7 +511,31 @@
                 const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(cleanQuery)}`;
                 
                 const isSightseeing = (category === 'sightseeing');
-                const hasSpecificLoc = isSightseeing || locationKeywords.some(kw => cleanPlain.includes(kw));
+                
+                // 観光地であっても特定の物理的固定ピンが存在しない概念・スラング・イベント・工芸品・アクティビティ等の除外判定
+                let isNonGeo = false;
+                if (isSightseeing) {
+                    const nonGeoExactList = [
+                        'ヒョーゴスラビア（兵庫五国）', 'ヒョーゴスラビア', '公営競技の聖地', '三河湾海水浴場',
+                        'ロマンシング佐賀（サガシリーズ連携）', 'ゾンビランドサガ聖地巡礼', 'ありあけハーバー',
+                        '赤福氷', 'ハトシ（卓袱料理）', '皿鉢料理'
+                    ];
+                    if (nonGeoExactList.includes(cleanPlain)) {
+                        isNonGeo = true;
+                    } else if (/(伝統的工芸品|和紙|漆器|焼$|焼（|塗|織|細工|切子|うちわ|団扇|人形|赤べこ|さるぼぼ|シーサー|べく杯|瀬戸物|阿波人形浄瑠璃)/.test(cleanPlain) &&
+                               !/(会館|村|の里|公園|ミュージアム|資料館|窯)/.test(cleanPlain)) {
+                        isNonGeo = true;
+                    } else if (/(まつり|祭り|祭$|祭（|花火大会|花火$|コンテスト|相馬野馬追|おどり|踊り|フェスティバル|夜神楽|流し雛|ガタリンピック)/.test(cleanPlain)) {
+                        isNonGeo = true;
+                    } else if (/(グランピング|サイクリング|ダイビング|シュノーケリング|ブラックバス釣り|潮干狩り|ホエールウォッチング|ジップライン)/.test(cleanPlain)) {
+                        isNonGeo = true;
+                    } else if (/(ライチョウ|雷鳥|流氷|ひこにゃん|ムツゴロウ|イリオモテヤマネコ|白虎隊|フェニックス並木|ガリンコ号|屋形船)/.test(cleanPlain)) {
+                        isNonGeo = true;
+                    }
+                }
+
+                const hasFoodLocation = (!isSightseeing) && locationKeywords.some(kw => cleanPlain.includes(kw));
+                const hasSpecificLoc = (isSightseeing && !isNonGeo) || hasFoodLocation;
                 
                 let btnsHtml = '';
                 if (hasSpecificLoc) {
