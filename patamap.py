@@ -842,8 +842,9 @@ def create_interactive_map_html(json_data_path="patamap_data.json", geojson_path
                     </select>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">項目・スポット名</label>
-                    <input type="text" id="modalItemName" class="form-input" placeholder="例: 大洗マリンタワー、水戸納豆" required>
+                    <label class="form-label" id="modalItemLabel">項目・スポット名</label>
+                    <input type="text" id="modalItemTextInput" class="form-input" placeholder="例: 大洗マリンタワー、水戸納豆">
+                    <select id="modalItemSelectInput" class="form-select" style="display:none;"></select>
                 </div>
                 <div class="form-group">
                     <label class="form-label">おすすめメモ・口コミ（任意）</label>
@@ -1052,19 +1053,61 @@ def create_interactive_map_html(json_data_path="patamap_data.json", geojson_path
 
             const modal = document.getElementById('addModal');
             if (!modal) return;
-            document.getElementById('modalPref').value = pref || '';
-            document.getElementById('modalCategory').value = cat || 'sightseeing';
-            document.getElementById('modalItemName').value = itemName || '';
+
+            const prefEl = document.getElementById('modalPref');
+            const catEl = document.getElementById('modalCategory');
+            const titleEl = document.getElementById('modalTitle');
+            const textInput = document.getElementById('modalItemTextInput');
+            const selectInput = document.getElementById('modalItemSelectInput');
+            const labelEl = document.getElementById('modalItemLabel');
+
+            prefEl.value = pref || '';
+            catEl.value = cat || 'sightseeing';
             document.getElementById('modalMemo').value = '';
             document.getElementById('modalAuthor').value = '';
-            
-            const titleEl = document.getElementById('modalTitle');
+
             if (itemName) {{
+                // 口コミ追加モード：スポット名は選択式（自由編集不可）
                 titleEl.innerHTML = `「${{itemName}}」に口コミを追加`;
+                labelEl.innerHTML = `対象スポット（選択式）`;
+                textInput.style.display = 'none';
+                textInput.removeAttribute('required');
+                selectInput.style.display = 'block';
+                selectInput.setAttribute('required', 'required');
+
+                // 該当都道府県・カテゴリの既存スポット一覧をオプションとして生成
+                selectInput.innerHTML = '';
+                const prefObj = patamapData[pref];
+                const catKey = cat === 'food' ? '食べ物' : cat === 'drink' ? 'お酒' : '観光地';
+                if (prefObj && prefObj[catKey] && prefObj[catKey] !== 'なし') {{
+                    const rawItems = prefObj[catKey].replace(/\\n/g, '、').replace(/,/g, '、').split('、').map(s => s.trim()).filter(s => s);
+                    rawItems.forEach(it => {{
+                        const cleanP = it.replace(/<rt>[^<]*<\\/rt>/g, '').replace(/<[^>]+>/g, '').trim();
+                        const opt = document.createElement('option');
+                        opt.value = cleanP;
+                        opt.textContent = cleanP;
+                        if (cleanP === itemName || it.includes(itemName) || itemName.includes(cleanP)) {{
+                            opt.selected = true;
+                        }}
+                        selectInput.appendChild(opt);
+                    }});
+                }}
+                prefEl.disabled = true;
+                catEl.disabled = true;
             }} else {{
+                // 新規項目追加モード：スポット名は自由入力
                 const catLabel = cat === 'food' ? 'グルメ' : cat === 'drink' ? '地酒' : '観光地';
                 titleEl.innerHTML = `【${{pref}}】に新しい${{catLabel}}を追加`;
+                labelEl.innerHTML = `項目・スポット名`;
+                selectInput.style.display = 'none';
+                selectInput.removeAttribute('required');
+                textInput.style.display = 'block';
+                textInput.setAttribute('required', 'required');
+                textInput.value = '';
+                prefEl.disabled = false;
+                catEl.disabled = false;
             }}
+
             modal.style.display = 'flex';
         }};
 
@@ -1072,26 +1115,39 @@ def create_interactive_map_html(json_data_path="patamap_data.json", geojson_path
             if (!e || e.target === document.getElementById('addModal') || e.target.classList.contains('modal-close-btn') || e.target.classList.contains('btn-secondary')) {{
                 const modal = document.getElementById('addModal');
                 if (modal) modal.style.display = 'none';
+                document.getElementById('modalPref').disabled = false;
+                document.getElementById('modalCategory').disabled = false;
             }}
         }};
 
         window.submitForm = function(e) {{
             e.preventDefault();
-            const pref = document.getElementById('modalPref').value;
-            const cat = document.getElementById('modalCategory').value;
-            const itemName = document.getElementById('modalItemName').value.trim();
+            const prefEl = document.getElementById('modalPref');
+            const catEl = document.getElementById('modalCategory');
+            const pref = prefEl.value;
+            const cat = catEl.value;
+            const textInput = document.getElementById('modalItemTextInput');
+            const selectInput = document.getElementById('modalItemSelectInput');
+            const isCommentMode = (selectInput.style.display !== 'none');
+            const itemName = isCommentMode ? selectInput.value.trim() : textInput.value.trim();
             const memo = document.getElementById('modalMemo').value.trim();
             const author = document.getElementById('modalAuthor').value.trim();
 
             if (!pref || !itemName) return;
 
+            // 送信用に disabled を解除
+            prefEl.disabled = false;
+            catEl.disabled = false;
+
             // ローカルデータに即時反映
             if (patamapData[pref]) {{
                 const catKey = cat === 'food' ? '食べ物' : cat === 'drink' ? 'お酒' : '観光地';
-                if (!patamapData[pref][catKey] || patamapData[pref][catKey] === 'なし') {{
-                    patamapData[pref][catKey] = itemName;
-                }} else if (!patamapData[pref][catKey].includes(itemName)) {{
-                    patamapData[pref][catKey] += '、' + itemName;
+                if (!isCommentMode) {{
+                    if (!patamapData[pref][catKey] || patamapData[pref][catKey] === 'なし') {{
+                        patamapData[pref][catKey] = itemName;
+                    }} else if (!patamapData[pref][catKey].includes(itemName)) {{
+                        patamapData[pref][catKey] += '、' + itemName;
+                    }}
                 }}
                 if (memo) {{
                     const memoStr = author ? `${{itemName}}: ${{memo}}（by ${{author}}）` : `${{itemName}}: ${{memo}}`;
@@ -1106,7 +1162,7 @@ def create_interactive_map_html(json_data_path="patamap_data.json", geojson_path
             const modal = document.getElementById('addModal');
             if (modal) modal.style.display = 'none';
 
-            alert(`🎉 「${{itemName}}」の情報を登録・追加しました！\\n（※Excel連携後はスプレッドシートにも自動保存されます）`);
+            alert(`🎉 「${{itemName}}」の情報を登録・保存しました！\\n（※GitHub上のデータ更新時は patamap_data.json に保存されます）`);
             
             // ポップアップを更新
             jumpToPref(pref);
