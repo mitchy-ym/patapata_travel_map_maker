@@ -879,6 +879,38 @@ def create_interactive_map_html(geojson_path="japan.geojson", output_html_path="
         </div>
     </div>
 
+    <!-- フローティング通知（自動で消えるトースト） -->
+    <div id="toastNotification" class="toast-notification">✅ 保存しました</div>
+
+    <style>
+        .toast-notification {{
+            position: fixed;
+            top: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-24px);
+            background: rgba(30, 41, 59, 0.94);
+            backdrop-filter: blur(8px);
+            color: #ffffff;
+            padding: 10px 24px;
+            border-radius: 999px;
+            font-size: 14px;
+            font-weight: 700;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 99999;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }}
+        .toast-notification.show {{
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }}
+    </style>
+
     <script>
         let patamapData = {json.dumps(pref_regions_default, ensure_ascii=False)};
         const regionColors = {json.dumps(REGION_COLORS, ensure_ascii=False)};
@@ -1231,11 +1263,24 @@ def create_interactive_map_html(geojson_path="japan.geojson", output_html_path="
             const modal = document.getElementById('addModal');
             if (modal) modal.style.display = 'none';
 
-            alert(`🎉 「${{itemName}}」の情報を登録・保存しました！\\n（※Googleスプレッドシートに即時反映され、全員の地図でリアルタイム共有されます）`);
+            // 自動で消えるトースト通知を表示
+            showToast('✅ 保存しました');
             
             // ポップアップを更新
             jumpToPref(pref);
         }};
+
+        // フローティング・トースト通知表示関数
+        function showToast(message) {{
+            const toast = document.getElementById('toastNotification');
+            if (!toast) return;
+            toast.textContent = message || '✅ 保存しました';
+            toast.classList.add('show');
+            clearTimeout(window.toastTimer);
+            window.toastTimer = setTimeout(() => {{
+                toast.classList.remove('show');
+            }}, 2400);
+        }}
 
         const option = {{
             tooltip: {{
