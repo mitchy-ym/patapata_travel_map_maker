@@ -125,19 +125,28 @@ REGION_PREFECTURES = {
 # 2. 地図HTML生成関数
 # ==============================================================================
 
-def create_interactive_map_html(json_data_path="patamap_data.json", geojson_path="japan.geojson", output_html_path="index.html"):
+def create_interactive_map_html(geojson_path="japan.geojson", output_html_path="index.html"):
     """
-    GeoJSONと都道府県別データを埋め込み、スタンドアロンで動作するWeb地図HTMLを生成します。
+    GeoJSONを読み込み、Google スプレッドシートと直接連携するスタンドアロンWeb地図HTMLを生成します。
     """
-    print(f"[ステップ1] 地図データを読み込み中: {json_data_path}")
-    if not os.path.exists(json_data_path):
-        raise FileNotFoundError(f"エラー: データファイル '{json_data_path}' が見つかりません。")
-
-    with open(json_data_path, "r", encoding="utf-8") as f:
-        prefectures_data = json.load(f)
+    print(f"[ステップ1] 地図GeoJSONデータを読み込み中: {geojson_path}")
+    if not os.path.exists(geojson_path):
+        raise FileNotFoundError(f"エラー: 地図ファイル '{geojson_path}' が見つかりません。")
 
     with open(geojson_path, "r", encoding="utf-8") as f:
         japan_geojson = json.load(f)
+
+    # 47都道府県の地区デフォルト定義
+    pref_regions_default = {}
+    for region, prefs in REGION_PREFECTURES.items():
+        for p in prefs:
+            pref_regions_default[p] = {
+                "地区": region,
+                "観光地": "読み込み中...",
+                "食べ物": "読み込み中...",
+                "お酒": "読み込み中...",
+                "メモ": ""
+            }
 
     # GeoJSONの各featureにEChartsが参照する 'name' プロパティ（日本語名）を付与
     for feat in japan_geojson.get("features", []):
@@ -871,7 +880,7 @@ def create_interactive_map_html(json_data_path="patamap_data.json", geojson_path
     </div>
 
     <script>
-        const patamapData = {json.dumps(prefectures_data, ensure_ascii=False)};
+        let patamapData = {json.dumps(pref_regions_default, ensure_ascii=False)};
         const regionColors = {json.dumps(REGION_COLORS, ensure_ascii=False)};
         const prefCenters = {json.dumps(PREFECTURE_CENTERS, ensure_ascii=False)};
         const regionCenters = {json.dumps(REGION_CENTERS, ensure_ascii=False)};
@@ -1457,7 +1466,6 @@ def main():
     print("=" * 60)
 
     html_file = create_interactive_map_html(
-        json_data_path="patamap_data.json",
         geojson_path="japan.geojson",
         output_html_path="index.html"
     )

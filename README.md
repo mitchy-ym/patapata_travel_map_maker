@@ -25,7 +25,6 @@ python patamap.py
 ## ファイル構成
 
 - `patamap.py`: Webマップ生成スクリプト
-- `patamap_data.json`: 初期・オフラインフォールバック用マスターデータ
 - `japan.geojson`: 日本地図GeoJSONデータ
 - `index.html`: 生成されたWebマップ（公開用）
 - `.github/workflows/pages.yml`: GitHub Pages 自動デプロイワークフロー
