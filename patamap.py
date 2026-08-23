@@ -866,6 +866,70 @@ def create_interactive_map_html(geojson_path="japan.geojson", output_html_path="
             border: 1px solid rgba(35, 99, 41, 0.2);
         }}
 
+        /* 画面全体の同期中オーバーレイ（操作完全ブロック） */
+        .full-loading-overlay {{
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(249, 246, 240, 0.92);
+            backdrop-filter: blur(8px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 999999;
+            transition: opacity 0.4s ease, visibility 0.4s ease;
+        }}
+        .full-loading-overlay.hidden {{
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }}
+        .loading-card {{
+            background: #ffffff;
+            border: 2px solid #e5d7c7;
+            padding: 28px 36px;
+            border-radius: 20px;
+            box-shadow: 0 16px 40px rgba(120, 95, 70, 0.16);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            text-align: center;
+            max-width: 90vw;
+        }}
+        .large-spinner {{
+            width: 42px;
+            height: 42px;
+            border: 3.5px solid #f3e8d8;
+            border-top-color: #b91c1c;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }}
+        .large-check {{
+            width: 42px;
+            height: 42px;
+            background: #16a34a;
+            color: #ffffff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            font-weight: bold;
+        }}
+        .loading-title {{
+            font-size: 17px;
+            font-weight: 800;
+            color: #2b2b2b;
+        }}
+        .loading-desc {{
+            font-size: 12px;
+            font-weight: 500;
+            color: #786d5f;
+        }}
+
         /* スマホ・レスポンシブ最適化（提案2） */
         @media (max-width: 640px) {{
             .floating-card {{
@@ -976,6 +1040,15 @@ def create_interactive_map_html(geojson_path="japan.geojson", output_html_path="
                     <button type="submit" class="btn-primary">登録・保存</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- 画面全体の同期中オーバーレイ（操作完全ブロック） -->
+    <div id="fullLoadingOverlay" class="full-loading-overlay">
+        <div class="loading-card">
+            <div id="loadingIcon" class="large-spinner"></div>
+            <div class="loading-title" id="loadingTitle">🔄 最新データを同期中...</div>
+            <div class="loading-desc" id="loadingDesc">Googleスプレッドシートから47都道府県の最新情報を取得しています</div>
         </div>
     </div>
 
@@ -1304,9 +1377,14 @@ def create_interactive_map_html(geojson_path="japan.geojson", output_html_path="
         // Google Apps Script (スプレッドシート直結エンドポイント)
         const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyJTZ65iQGVbYd5MvJhyEK7jdV5ceh_O12vjtm2TCAUFqB3cykww9U6fkfojw90ySjx/exec";
 
-        // スプレッドシートから最新データを非同期で取得して地図データをリアルタイム更新
+        // スプレッドシートから最新データを非同期で取得して地図データをリアルタイム更新（全画面オーバーレイ連動）
         async function fetchLatestDataFromSpreadsheet() {{
+            const overlay = document.getElementById('fullLoadingOverlay');
+            const icon = document.getElementById('loadingIcon');
+            const title = document.getElementById('loadingTitle');
+            const desc = document.getElementById('loadingDesc');
             const badge = document.getElementById('syncStatus');
+
             try {{
                 const res = await fetch(GAS_API_URL);
                 if (res.ok) {{
@@ -1314,19 +1392,28 @@ def create_interactive_map_html(geojson_path="japan.geojson", output_html_path="
                     if (latest && typeof latest === 'object' && !latest.status && Object.keys(latest).length >= 40) {{
                         patamapData = latest;
                         console.log("✅ Googleスプレッドシートから最新データを同期しました (47都道府県)");
-                        if (badge) {{
-                            badge.className = 'sync-badge sync-ok';
-                            badge.innerHTML = '<span class="sync-dot"></span>同期済';
-                        }}
                     }}
                 }}
             }} catch (err) {{
                 console.warn("⚠️ スプレッドシート同期スキップ（初期キャッシュデータを使用）:", err);
-                if (badge) {{
-                    badge.className = 'sync-badge sync-ok';
-                    badge.innerHTML = '<span class="sync-dot"></span>同期完了';
-                }}
             }}
+
+            // 同期完了の視覚フィードバック
+            if (icon && title && desc) {{
+                icon.className = 'large-check';
+                icon.innerHTML = '✓';
+                title.textContent = '🎉 最新データ同期完了！';
+                desc.textContent = '47都道府県の最新マップを開きます...';
+            }}
+            if (badge) {{
+                badge.className = 'sync-badge sync-ok';
+                badge.innerHTML = '<span class="sync-dot"></span>同期済';
+            }}
+
+            // 0.45秒後に全画面オーバーレイをふわっと解除して操作可能に
+            setTimeout(() => {{
+                if (overlay) overlay.classList.add('hidden');
+            }}, 450);
         }}
         fetchLatestDataFromSpreadsheet();
 
