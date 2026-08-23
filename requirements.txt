@@ -1,4 +1,2 @@
-pandas
-openpyxl
-requests
-pykakasi
+# PataMap is built purely using Python standard libraries (os, json, webbrowser).
+# No external dependencies required.

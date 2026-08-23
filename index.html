@@ -613,6 +613,103 @@
             background: #991b1b;
             transform: translateY(-1px);
         }
+
+        /* 同期ステータスバッジ（提案3） */
+        .sync-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 12px;
+            margin-top: 4px;
+            width: fit-content;
+            transition: all 0.3s ease;
+        }
+        .sync-loading {
+            background: #fef3c7;
+            color: #92400e;
+            border: 1px solid #fde68a;
+        }
+        .sync-ok {
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+        .sync-spinner {
+            width: 8px;
+            height: 8px;
+            border: 1.5px solid #d97706;
+            border-top-color: transparent;
+            border-radius: 50%;
+            display: inline-block;
+            animation: spin 0.8s linear infinite;
+        }
+        .sync-dot {
+            width: 6px;
+            height: 6px;
+            background: #16a34a;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* スポット件数バッジ（提案4） */
+        .pref-badge-group {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            margin-left: auto;
+        }
+        .count-pill {
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 8px;
+            line-height: 1.3;
+            letter-spacing: -0.2px;
+        }
+        .pill-sightseeing {
+            background: rgba(30, 78, 121, 0.1);
+            color: #1e4e79;
+            border: 1px solid rgba(30, 78, 121, 0.2);
+        }
+        .pill-food {
+            background: rgba(185, 28, 28, 0.1);
+            color: #991b1b;
+            border: 1px solid rgba(185, 28, 28, 0.2);
+        }
+        .pill-drink {
+            background: rgba(35, 99, 41, 0.1);
+            color: #236329;
+            border: 1px solid rgba(35, 99, 41, 0.2);
+        }
+
+        /* スマホ・レスポンシブ最適化（提案2） */
+        @media (max-width: 640px) {
+            .floating-card {
+                top: 8px;
+                left: 8px;
+                right: 8px;
+                width: auto;
+                max-width: none;
+                padding: 10px 12px;
+                gap: 6px;
+            }
+            .card-title-main {
+                font-size: 15px;
+            }
+            .card-footer-tip {
+                display: none;
+            }
+            .custom-popup-content {
+                max-height: 52vh !important;
+                max-width: calc(100vw - 24px) !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -622,6 +719,7 @@
             <div class="card-header">
                 <div class="card-title-main">🗾 全国観光マップ（47都道府県）</div>
                 <div class="card-title-sub">フロリの47都道府県パタパタ旅行企画</div>
+                <div id="syncStatus" class="sync-badge sync-loading"><span class="sync-spinner"></span>データ同期中...</div>
             </div>
             <div class="region-legend-container">
                 <button class="region-chip" onclick="jumpToRegion('北海道+東北')" 
@@ -1172,6 +1270,7 @@
 
         // スプレッドシートから最新データを非同期で取得して地図データをリアルタイム更新
         async function fetchLatestDataFromSpreadsheet() {
+            const badge = document.getElementById('syncStatus');
             try {
                 const res = await fetch(GAS_API_URL);
                 if (res.ok) {
@@ -1179,10 +1278,18 @@
                     if (latest && typeof latest === 'object' && !latest.status && Object.keys(latest).length >= 40) {
                         patamapData = latest;
                         console.log("✅ Googleスプレッドシートから最新データを同期しました (47都道府県)");
+                        if (badge) {
+                            badge.className = 'sync-badge sync-ok';
+                            badge.innerHTML = '<span class="sync-dot"></span>同期済';
+                        }
                     }
                 }
             } catch (err) {
                 console.warn("⚠️ スプレッドシート同期スキップ（初期キャッシュデータを使用）:", err);
+                if (badge) {
+                    badge.className = 'sync-badge sync-ok';
+                    badge.innerHTML = '<span class="sync-dot"></span>同期完了';
+                }
             }
         }
         fetchLatestDataFromSpreadsheet();
@@ -1322,15 +1429,28 @@
                         const foodHtml = formatList(prefData['食べ物'], 'food', prefName, memoMap);
                         const drinkHtml = formatList(prefData['お酒'], 'drink', prefName, memoMap);
 
+                        function getCount(text) {
+                            if (!text || text === 'なし' || text === '読み込み中...') return 0;
+                            return text.replace(/\n/g, '、').replace(/,/g, '、').split('、').map(s => s.trim()).filter(s => s).length;
+                        }
+                        const countSight = getCount(prefData['観光地']);
+                        const countFood = getCount(prefData['食べ物']);
+                        const countDrink = getCount(prefData['お酒']);
+
                         return `
                             <div class="tooltip-card">
                                 <div class="tooltip-header" style="border-bottom-color: ${colorInfo.hover};">
                                     <div class="tooltip-pref-title" style="color: ${colorInfo.text};">
                                         <span>📍 ${prefName}</span>
                                     </div>
-                                    <span class="tooltip-region-badge" style="background:${colorInfo.badge_bg}; color:${colorInfo.text}; border:1px solid ${colorInfo.color};">
-                                        ${region}
-                                    </span>
+                                    <div class="pref-badge-group">
+                                        <span class="count-pill pill-sightseeing" title="観光地 ${countSight}件">📸 ${countSight}</span>
+                                        <span class="count-pill pill-food" title="グルメ ${countFood}件">🍽️ ${countFood}</span>
+                                        ${countDrink > 0 ? `<span class="count-pill pill-drink" title="地酒 ${countDrink}件">🍶 ${countDrink}</span>` : ''}
+                                        <span class="tooltip-region-badge" style="background:${colorInfo.badge_bg}; color:${colorInfo.text}; border:1px solid ${colorInfo.color};">
+                                            ${region}
+                                        </span>
+                                    </div>
                                 </div>
                                 <div class="tooltip-section">
                                     <div class="tooltip-title sightseeing-title">
