@@ -917,16 +917,31 @@
             });
         });
 
-        // 都道府県のメモテキストを辞書化する関数（複数口コミ対応）
+        // 都道府県のメモテキストを辞書化する関数（複数口コミ・長文対応）
         function parsePrefMemos(memoText) {
             const memoMap = {};
             if (!memoText || memoText === 'なし') return memoMap;
-            const entries = memoText.replace(/\n/g, '、').split('、');
+            
+            // 改行または特殊区切りで1件ずつ分割（改行がない場合は読点分割）
+            let entries = [];
+            if (memoText.includes('
+')) {
+                entries = memoText.split('
+');
+            } else {
+                entries = memoText.split('、');
+            }
+
             entries.forEach(entry => {
-                const parts = entry.split(/[:：]/);
-                if (parts.length >= 2) {
-                    const key = parts[0].trim().replace(/<rt>[^<]*<\/rt>/g, '').replace(/<[^>]+>/g, '');
-                    const val = parts.slice(1).join(':').trim();
+                if (!entry || !entry.trim()) return;
+                const idx = entry.indexOf(':');
+                const idxZen = entry.indexOf('：');
+                const sepIdx = (idx !== -1 && idxZen !== -1) ? Math.min(idx, idxZen) : (idx !== -1 ? idx : idxZen);
+                
+                if (sepIdx !== -1) {
+                    const rawKey = entry.substring(0, sepIdx).trim();
+                    const key = rawKey.replace(/<rt>[^<]*<\/rt>/g, '').replace(/<[^>]+>/g, '');
+                    const val = entry.substring(sepIdx + 1).trim();
                     if (key && val) {
                         if (!memoMap[key]) {
                             memoMap[key] = [];
@@ -942,7 +957,7 @@
                 if (memoMap[k].length === 1) {
                     mergedMap[k] = memoMap[k][0];
                 } else {
-                    mergedMap[k] = memoMap[k].map((m, i) => `<div style="margin-bottom:4px;">💬 ${m}</div>`).join('');
+                    mergedMap[k] = memoMap[k].map((m, i) => `<div style="margin-bottom:6px; padding-bottom:4px; border-bottom:1px dashed #e2d9cc;">💬 ${m}</div>`).join('');
                 }
             }
             return mergedMap;
