@@ -1482,7 +1482,7 @@ def create_interactive_map_html(geojson_path="japan.geojson", output_html_path="
                                     <div class="pref-badge-group">
                                         <span class="count-pill pill-sightseeing" title="観光地 ${{countSight}}件">📸 ${{countSight}}</span>
                                         <span class="count-pill pill-food" title="グルメ ${{countFood}}件">🍽️ ${{countFood}}</span>
-                                        ${{countDrink > 0 ? `<span class="count-pill pill-drink" title="地酒 ${{countDrink}}件">🍶 ${{countDrink}}</span>` : ''}}
+                                        <span class="count-pill pill-drink" title="地酒 ${{countDrink}}件">🍶 ${{countDrink}}</span>
                                         <span class="tooltip-region-badge" style="background:${{colorInfo.badge_bg}}; color:${{colorInfo.text}}; border:1px solid ${{colorInfo.color}};">
                                             ${{region}}
                                         </span>
