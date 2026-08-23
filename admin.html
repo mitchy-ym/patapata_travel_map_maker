@@ -410,11 +410,10 @@
             <span class="header-badge">秘匿管理画面</span>
         </div>
         <div class="header-actions">
-            <button type="button" class="btn btn-secondary" onclick="exportJsonFile()" title="編集後の最新 patamap_data.json をダウンロード">📥 JSON保存</button>
-            <button type="button" class="btn btn-secondary" onclick="copyJsonToClipboard()" title="JSONテキストをクリップボードにコピー">📋 JSONコピー</button>
-            <button type="button" class="btn btn-github" onclick="openGithubModal()" title="GitHub API経由で直接リポジトリに保存">🚀 GitHub直接保存</button>
+            <button type="button" class="btn btn-primary" onclick="handleDirectSave()" style="background:#15803d; border-color:#166534;" title="編集したデータをGitHubにコミットして本番マップを自動更新">💾 本番マップに保存・更新</button>
+            <button type="button" class="btn btn-secondary" onclick="openGithubModal()" title="GitHub Personal Access Token (PAT) を設定・確認">⚙️ トークン設定</button>
             <button type="button" class="btn btn-danger" onclick="resetAllChanges()" title="未保存の編集を破棄して初期状態に戻す">🔄 リセット</button>
-            <a href="index.html" target="_blank" class="btn btn-primary" title="公開マップを別タブで開く">🌐 公開マップ</a>
+            <a href="index.html" target="_blank" class="btn btn-secondary" title="公開マップを別タブで開く">🌐 公開マップ</a>
         </div>
     </header>
 
@@ -911,16 +910,33 @@
 
         // GitHub保存モーダル
         function openGithubModal() {
+            loadSavedGitHubSettings();
             document.getElementById('githubModal').style.display = 'flex';
         }
 
         function loadSavedGitHubSettings() {
+            const token = localStorage.getItem('patamap_gh_token') || '';
+            const repo = localStorage.getItem('patamap_gh_repo') || 'mitchy-ym/patapata_travel_map_maker';
+            const branch = localStorage.getItem('patamap_gh_branch') || 'main';
+            document.getElementById('ghToken').value = token;
+            document.getElementById('ghRepo').value = repo;
+            document.getElementById('ghBranch').value = branch;
+        }
+
+        // 本番マップへワンクリック直接保存
+        function handleDirectSave() {
             const token = localStorage.getItem('patamap_gh_token');
-            const repo = localStorage.getItem('patamap_gh_repo');
-            const branch = localStorage.getItem('patamap_gh_branch');
-            if (token) document.getElementById('ghToken').value = token;
-            if (repo) document.getElementById('ghRepo').value = repo;
-            if (branch) document.getElementById('ghBranch').value = branch;
+            if (!token) {
+                alert('💡 初回設定: GitHub Personal Access Token (PAT) を設定してください。\n（※ブラウザに記憶されるため、次回から1クリックで保存できるようになります）');
+                openGithubModal();
+                return;
+            }
+
+            if (confirm('編集したデータを GitHub に保存して、本番マップを更新しますか？\n（※約15秒後に自動で本番サイトが更新されます）')) {
+                const repo = localStorage.getItem('patamap_gh_repo') || 'mitchy-ym/patapata_travel_map_maker';
+                const branch = localStorage.getItem('patamap_gh_branch') || 'main';
+                executeGitHubCommit(token, repo, branch, 'Update patamap_data.json via admin editor');
+            }
         }
 
         async function commitToGitHub(e) {
@@ -929,7 +945,6 @@
             const repo = document.getElementById('ghRepo').value.trim();
             const branch = document.getElementById('ghBranch').value.trim();
             const message = document.getElementById('ghMessage').value.trim();
-            const btn = document.getElementById('ghSubmitBtn');
 
             if (!token || !repo || !branch || !message) return;
 
@@ -937,8 +952,12 @@
             localStorage.setItem('patamap_gh_repo', repo);
             localStorage.setItem('patamap_gh_branch', branch);
 
-            btn.disabled = true;
-            btn.textContent = '⏳ 保存中...';
+            closeModal('githubModal');
+            await executeGitHubCommit(token, repo, branch, message);
+        }
+
+        async function executeGitHubCommit(token, repo, branch, message) {
+            showToast('⏳ GitHub にデータを送信中...');
 
             try {
                 // 1. 最新のファイルのSHAを取得
@@ -951,6 +970,9 @@
                 });
 
                 if (!getRes.ok) {
+                    if (getRes.status === 401) {
+                        throw new Error('トークンが無効または期限切れです。トークン設定から再設定してください。');
+                    }
                     throw new Error(`GitHub API エラー (GET): ${getRes.status} ${getRes.statusText}`);
                 }
                 const getData = await getRes.json();
@@ -987,14 +1009,10 @@
                     throw new Error(`GitHub API エラー (PUT): ${putRes.status} ${errData.message || putRes.statusText}`);
                 }
 
-                closeModal('githubModal');
-                alert('🎉 GitHub リポジトリへの保存が完了しました！\n\nGitHub Actions が自動で本番サイトの再ビルドを開始しました。（約15秒で反映されます）');
-                showToast('🚀 GitHubへの保存完了！');
+                alert('🎉 GitHubへの保存が完了しました！\n\nGitHub Actions が自動で本番サイトの再ビルドを開始しました。（約15秒で反映されます）');
+                showToast('🚀 本番更新がスタートしました！');
             } catch (err) {
                 alert('❌ 保存に失敗しました:\n' + err.message);
-            } finally {
-                btn.disabled = false;
-                btn.textContent = 'GitHubに保存＆自動デプロイ';
             }
         }
     </script>
