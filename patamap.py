@@ -232,12 +232,12 @@ def create_interactive_map_html(geojson_path="japan.geojson", output_html_path="
             z-index: 100;
             background: rgba(255, 253, 248, 0.82);
             backdrop-filter: blur(5px);
-            padding: 16px 18px 12px 18px;
+            padding: 15px 16px 12px 16px;
             border-radius: 18px;
             box-shadow: 0 10px 28px rgba(120, 95, 70, 0.08), 0 2px 6px rgba(120, 95, 70, 0.04);
             border: 1.5px solid rgba(229, 215, 199, 0.85);
-            width: 350px;
-            max-width: calc(100vw - 40px);
+            width: 360px;
+            max-width: calc(100vw - 32px);
             display: flex;
             flex-direction: column;
             gap: 8px;
@@ -246,7 +246,7 @@ def create_interactive_map_html(geojson_path="japan.geojson", output_html_path="
         .floating-card.collapsed {{
             width: auto;
             max-width: calc(100vw - 30px);
-            padding: 10px 14px;
+            padding: 9px 14px;
             gap: 0;
             border-radius: 14px;
         }}
@@ -262,25 +262,26 @@ def create_interactive_map_html(geojson_path="japan.geojson", output_html_path="
         }}
         .card-header-row {{
             display: flex;
-            align-items: flex-start;
+            align-items: center;
             justify-content: space-between;
             gap: 6px;
             width: 100%;
         }}
         .card-toggle-btn {{
             background: rgba(120, 95, 70, 0.08);
-            border: 1px solid rgba(120, 95, 70, 0.2);
-            border-radius: 8px;
-            padding: 3px 8px;
-            font-size: 11px;
+            border: 1px solid rgba(120, 95, 70, 0.22);
+            border-radius: 7px;
+            padding: 3px 7px;
+            font-size: 10.5px;
             font-weight: 700;
-            color: #786d5f;
+            color: #6b5e50;
             cursor: pointer;
             transition: all 0.2s ease;
             white-space: nowrap;
             display: inline-flex;
             align-items: center;
-            gap: 3px;
+            gap: 2px;
+            flex-shrink: 0;
         }}
         .card-toggle-btn:hover {{
             background: #b91c1c;
@@ -295,13 +296,14 @@ def create_interactive_map_html(geojson_path="japan.geojson", output_html_path="
         }}
         .card-title-main {{
             display: block;
-            font-size: 16.5px;
+            font-size: 15px;
             font-weight: 800;
             color: #b91c1c; /* 茜・朱赤 */
-            letter-spacing: 0;
-            line-height: 1.25;
+            letter-spacing: -0.3px;
+            line-height: 1.2;
             white-space: nowrap;
-            width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
             margin: 0;
         }}
         .card-title-sub {{
@@ -1007,7 +1009,7 @@ def create_interactive_map_html(geojson_path="japan.geojson", output_html_path="
         <div id="floatingCard" class="floating-card">
             <div class="card-header">
                 <div class="card-header-row">
-                    <div class="card-title-main">🗾 リスナーと作る！全国観光マップ</div>
+                    <div class="card-title-main">リスナーと作る！全国観光マップ</div>
                     <button type="button" id="cardToggleBtn" class="card-toggle-btn" onclick="toggleFloatingCard()" title="メニューを開閉">閉じる ▲</button>
                 </div>
                 <div class="card-title-sub">～フロリの47都道府県パタパタ旅行～</div>
