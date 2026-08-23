@@ -182,11 +182,12 @@ def create_interactive_map_html(json_data_path="patamap_data.json", geojson_path
     <style>
         * {{
             box-sizing: border-box;
+            font-family: "Zen Maru Gothic", "Hiragino Maru Gothic ProN", "Hiragino Sans", "Yu Gothic UI", "Yu Gothic", Meiryo, sans-serif !important;
         }}
         body {{
             margin: 0;
             padding: 0;
-            font-family: "Zen Maru Gothic", "Hiragino Maru Gothic ProN", "Hiragino Sans", "Yu Gothic UI", "Yu Gothic", Meiryo, sans-serif;
+            font-family: "Zen Maru Gothic", "Hiragino Maru Gothic ProN", "Hiragino Sans", "Yu Gothic UI", "Yu Gothic", Meiryo, sans-serif !important;
             background-color: {MAP_BG_COLOR};
             color: #333;
             overflow: hidden;
@@ -1181,7 +1182,10 @@ def create_interactive_map_html(json_data_path="patamap_data.json", geojson_path
                 padding: 0,
                 borderRadius: 14,
                 extraCssText: 'box-shadow: 0 10px 28px rgba(120,95,70,0.18); overflow: hidden; border-radius: 14px;',
-                textStyle: {{ color: '#2b2b2b' }},
+                textStyle: {{
+                    fontFamily: '"Zen Maru Gothic", "Hiragino Maru Gothic ProN", "Hiragino Sans", "Yu Gothic UI", "Yu Gothic", Meiryo, sans-serif',
+                    color: '#2b2b2b'
+                }},
                 position: function (point, params, dom, rect, size) {{
                     const x = point[0];
                     const y = point[1];
