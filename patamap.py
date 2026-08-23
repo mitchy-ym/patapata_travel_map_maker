@@ -1280,14 +1280,16 @@ def create_interactive_map_html(json_data_path="patamap_data.json", geojson_path
                             show: true,
                             color: '#111',
                             fontWeight: 'bold',
-                            fontSize: 13
+                            fontSize: 13,
+                            fontFamily: '"Zen Maru Gothic", "Hiragino Maru Gothic ProN", "Hiragino Sans", "Yu Gothic UI", sans-serif'
                         }}
                     }},
                     label: {{
                         show: true,
                         color: '#333',
                         fontSize: 11,
-                        fontWeight: '500',
+                        fontWeight: '700',
+                        fontFamily: '"Zen Maru Gothic", "Hiragino Maru Gothic ProN", "Hiragino Sans", "Yu Gothic UI", sans-serif',
                         formatter: '{{b}}'
                     }},
                     data: mapData
@@ -1296,6 +1298,25 @@ def create_interactive_map_html(json_data_path="patamap_data.json", geojson_path
         }};
 
         myChart.setOption(option);
+
+        // Webフォント（Zen Maru Gothic）のロード完了時に地図上の文字を確実に丸ゴシックで再描画
+        if (document.fonts) {{
+            document.fonts.ready.then(function () {{
+                myChart.setOption({{
+                    series: [{{
+                        label: {{
+                            fontFamily: '"Zen Maru Gothic", "Hiragino Maru Gothic ProN", "Hiragino Sans", "Yu Gothic UI", sans-serif'
+                        }},
+                        emphasis: {{
+                            label: {{
+                                fontFamily: '"Zen Maru Gothic", "Hiragino Maru Gothic ProN", "Hiragino Sans", "Yu Gothic UI", sans-serif'
+                            }}
+                        }}
+                    }}]
+                }});
+                myChart.resize();
+            }});
+        }}
 
         // 地図クリック・タップ時の連動処理
         myChart.on('click', function (params) {{
