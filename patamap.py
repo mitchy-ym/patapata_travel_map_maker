@@ -1237,12 +1237,28 @@ def create_interactive_map_html(geojson_path="japan.geojson", output_html_path="
             return null;
         }}
 
-        // テキストをルビ付き・デュアルアクションボタン＆メモ吹き出しHTMLに整形する関数（v1.2）
+        // テキストをルビ付き・デュアルアクションボタン＆メモ吹き出しHTMLに整形する関数（v1.2・重複完全排除対応）
         function formatList(text, category, prefName, memoMap) {{
             if (!text || text === 'なし') return '<span style="color:#999; font-style:italic;">なし</span>';
             
             const rawItems = text.replace(/\\n/g, '、').replace(/,/g, '、').split('、').map(s => s.trim()).filter(s => s);
             if (rawItems.length === 0) return '<span style="color:#999; font-style:italic;">なし</span>';
+
+            // スポット名（漢字・プレーン名）基準で重複排除（ルビ付きを優先保持）
+            const itemMap = new Map();
+            rawItems.forEach(item => {{
+                const plain = item.replace(/<rt>[^<]*<\\/rt>/g, '').replace(/<[^>]+>/g, '').trim();
+                if (!plain) return;
+                if (!itemMap.has(plain)) {{
+                    itemMap.set(plain, item);
+                }} else {{
+                    if (item.includes('<ruby>') && !itemMap.get(plain).includes('<ruby>')) {{
+                        itemMap.set(plain, item);
+                    }}
+                }}
+            }});
+            const uniqueItems = Array.from(itemMap.values());
+            if (uniqueItems.length === 0) return '<span style="color:#999; font-style:italic;">なし</span>';
 
             // 特定の店舗・施設・市場が存在するキーワード群
             const locationKeywords = [
@@ -1259,7 +1275,7 @@ def create_interactive_map_html(geojson_path="japan.geojson", output_html_path="
                 'うめちゃんち', '岡本屋', '武蔵屋', '直ちゃん', 'おぐら', 'ひでじビール', 'むじゃき', 'やぶ金'
             ];
 
-            const formattedItems = rawItems.map((item, idx) => {{
+            const formattedItems = uniqueItems.map((item, idx) => {{
                 let cleanName = item.replace(/<rt>[^<]*<\\/rt>/g, '').replace(/<[^>]+>/g, '').replace(/[（\\(][^）\\)]*[）\\)]/g, '').trim();
                 // 検索ノイズとなる接頭修飾フレーズを自動トリミング
                 cleanName = cleanName.replace(/^(世界遺産・国宝|世界遺産|国宝|特別名勝|名勝|国史跡|国指定史跡|国指定天然記念物|天然記念物|日本百名山|日本三名城|新日本三大夜景|現存天守|奇跡の清流|日本最後の清流|特別天然記念物|大本山|世界新三大夜景|名物|元祖)\\s*/g, '').trim();
@@ -1604,7 +1620,9 @@ def create_interactive_map_html(geojson_path="japan.geojson", output_html_path="
 
                         function getCount(text) {{
                             if (!text || text === 'なし' || text === '読み込み中...') return 0;
-                            return text.replace(/\\n/g, '、').replace(/,/g, '、').split('、').map(s => s.trim()).filter(s => s).length;
+                            const rawItems = text.replace(/\\n/g, '、').replace(/,/g, '、').split('、').map(s => s.trim()).filter(s => s);
+                            const plainSet = new Set(rawItems.map(it => it.replace(/<rt>[^<]*<\\/rt>/g, '').replace(/<[^>]+>/g, '').trim()).filter(s => s));
+                            return plainSet.size;
                         }}
                         const countSight = getCount(prefData['観光地']);
                         const countFood = getCount(prefData['食べ物']);
