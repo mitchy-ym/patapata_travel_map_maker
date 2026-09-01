@@ -663,7 +663,35 @@ def create_interactive_map_html(geojson_path="japan.geojson", output_html_path="
             font-weight: 700;
             font-size: 11px;
             color: #b91c1c;
-            margin-bottom: 3px;
+            margin-bottom: 6px;
+        }}
+        .memo-entry {{
+            display: flex;
+            align-items: flex-start;
+            gap: 6px;
+            margin-bottom: 6px;
+            padding-bottom: 6px;
+            border-bottom: 1px dashed #e2d9cc;
+            font-size: 11.5px;
+            line-height: 1.55;
+            color: #4a3f35;
+        }}
+        .memo-entry:last-child {{
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }}
+        .memo-entry-icon {{
+            flex-shrink: 0;
+            font-size: 11px;
+            line-height: 1.55;
+            opacity: 0.85;
+            user-select: none;
+        }}
+        .memo-entry-text {{
+            flex: 1;
+            word-break: break-word;
+            line-height: 1.55;
         }}
         .edit-btn {{
             background: #f8fafc;
@@ -1212,14 +1240,15 @@ def create_interactive_map_html(geojson_path="japan.geojson", output_html_path="
                 }}
             }});
 
-            // 複数口コミがある場合は見やすく箇条書きで結合
+            // 口コミを統一したフレックスレイアウトで整形（2行目以降も美しくインデント揃え）
             const mergedMap = {{}};
             for (let k in memoMap) {{
-                if (memoMap[k].length === 1) {{
-                    mergedMap[k] = memoMap[k][0];
-                }} else {{
-                    mergedMap[k] = memoMap[k].map((m, i) => `<div style="margin-bottom:6px; padding-bottom:4px; border-bottom:1px dashed #e2d9cc;">💬 ${{m}}</div>`).join('');
-                }}
+                mergedMap[k] = memoMap[k].map(m => `
+                    <div class="memo-entry">
+                        <span class="memo-entry-icon">💬</span>
+                        <div class="memo-entry-text">${{m}}</div>
+                    </div>
+                `).join('');
             }}
             return mergedMap;
         }}
