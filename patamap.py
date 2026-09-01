@@ -1036,10 +1036,10 @@ def create_interactive_map_html(geojson_path="japan.geojson", output_html_path="
                 <div class="form-group">
                     <label class="form-label">カテゴリ</label>
                     <select id="modalCategory" class="form-select" required>
-                        <option value="sightseeing">観光地・名所</option>
-                        <option value="food">ご当地グルメ・食べ物</option>
-                        <option value="drink">地酒・お酒</option>
-                        <option value="souvenir">お土産・名産品</option>
+                        <option value="sightseeing">観光地</option>
+                        <option value="food">ご当地グルメ</option>
+                        <option value="drink">地酒</option>
+                        <option value="souvenir">お土産</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -1589,7 +1589,7 @@ def create_interactive_map_html(geojson_path="japan.geojson", output_html_path="
                                     </div>
                                     <div class="pref-badge-group">
                                         <span class="count-pill pill-sightseeing" title="観光地 ${{countSight}}件">📸 ${{countSight}}</span>
-                                        <span class="count-pill pill-food" title="グルメ ${{countFood}}件">🍽️ ${{countFood}}</span>
+                                        <span class="count-pill pill-food" title="ご当地グルメ ${{countFood}}件">🍽️ ${{countFood}}</span>
                                         <span class="count-pill pill-drink" title="地酒 ${{countDrink}}件">🍶 ${{countDrink}}</span>
                                         <span class="count-pill pill-souvenir" title="お土産 ${{countSouvenir}}件">🎁 ${{countSouvenir}}</span>
                                         <span class="tooltip-region-badge" style="background:${{colorInfo.badge_bg}}; color:${{colorInfo.text}}; border:1px solid ${{colorInfo.color}};">
@@ -1599,28 +1599,28 @@ def create_interactive_map_html(geojson_path="japan.geojson", output_html_path="
                                 </div>
                                 <div class="tooltip-section">
                                     <div class="tooltip-title sightseeing-title">
-                                        <span>📸 観光地・名所</span>
+                                        <span>📸 観光地</span>
                                         <button type="button" class="add-item-btn add-sightseeing-btn" onclick="openAddModal('${{prefName}}', 'sightseeing', '')" title="【${{prefName}}】に新しい観光地を追加">➕ 観光地追加</button>
                                     </div>
                                     <div class="tooltip-content sightseeing-box">${{sightHtml}}</div>
                                 </div>
                                 <div class="tooltip-section">
                                     <div class="tooltip-title food-title">
-                                        <span>🍽️ ご当地グルメ・食べ物</span>
-                                        <button type="button" class="add-item-btn add-food-btn" onclick="openAddModal('${{prefName}}', 'food', '')" title="【${{prefName}}】に新しいグルメを追加">➕ グルメ追加</button>
+                                        <span>🍽️ ご当地グルメ</span>
+                                        <button type="button" class="add-item-btn add-food-btn" onclick="openAddModal('${{prefName}}', 'food', '')" title="【${{prefName}}】に新しいご当地グルメを追加">➕ グルメ追加</button>
                                     </div>
                                     <div class="tooltip-content food-box">${{foodHtml}}</div>
                                 </div>
                                 <div class="tooltip-section">
                                     <div class="tooltip-title drink-title">
-                                        <span>🍶 地酒・お酒</span>
+                                        <span>🍶 地酒</span>
                                         <button type="button" class="add-item-btn add-drink-btn" onclick="openAddModal('${{prefName}}', 'drink', '')" title="【${{prefName}}】に新しい地酒を追加">➕ 地酒追加</button>
                                     </div>
                                     <div class="tooltip-content drink-box">${{drinkHtml}}</div>
                                 </div>
                                 <div class="tooltip-section">
                                     <div class="tooltip-title souvenir-title">
-                                        <span>🎁 お土産・名産品</span>
+                                        <span>🎁 お土産</span>
                                         <button type="button" class="add-item-btn add-souvenir-btn" onclick="openAddModal('${{prefName}}', 'souvenir', '')" title="【${{prefName}}】に新しいお土産を追加">➕ お土産追加</button>
                                     </div>
                                     <div class="tooltip-content souvenir-box">${{souvenirHtml}}</div>
