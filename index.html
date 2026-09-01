@@ -1113,20 +1113,50 @@
             });
         });
 
-        // 都道府県のメモテキストを辞書化する関数（複数口コミ・長文対応）
+        // 都道府県のメモテキストを辞書化する関数（複数口コミ・長文・改行混在対応の超堅牢パーサー）
         function parsePrefMemos(memoText) {
             const memoMap = {};
             if (!memoText || memoText === 'なし') return memoMap;
             
-            // 改行または特殊区切りで1件ずつ分割（改行がない場合は読点分割）
-            let entries = [];
-            if (memoText.indexOf('\n') !== -1) {
-                entries = memoText.split(/\r?\n/);
-            } else {
-                entries = memoText.split('、');
+            // 1. 改行で分割し、コロンのない行は直前の口コミの改行続きとして安全に結合
+            const rawLines = memoText.split(/\r?\n/);
+            const rawEntries = [];
+            let currentEntry = '';
+
+            rawLines.forEach(line => {
+                const trimmed = line.trim();
+                if (!trimmed) return;
+                
+                const hasColon = trimmed.indexOf(':') !== -1 || trimmed.indexOf('：') !== -1;
+                if (hasColon) {
+                    if (currentEntry) {
+                        rawEntries.push(currentEntry);
+                    }
+                    currentEntry = trimmed;
+                } else {
+                    if (currentEntry) {
+                        currentEntry += ' ' + trimmed;
+                    } else {
+                        currentEntry = trimmed;
+                    }
+                }
+            });
+            if (currentEntry) {
+                rawEntries.push(currentEntry);
             }
 
-            entries.forEach(entry => {
+            // 2. 1行内に読点「、」で複数スポットの口コミが連結されている場合を分割
+            // （肯定先読み：読点「、」の直後に「コロンを含むスポット名」が続く境界で分割）
+            const finalEntries = [];
+            rawEntries.forEach(entry => {
+                const subParts = entry.split(/、(?=[^:：]+[:：])/);
+                subParts.forEach(p => {
+                    if (p.trim()) finalEntries.push(p.trim());
+                });
+            });
+
+            // 3. 各エントリから「スポット名」と「口コミ本文」を抽出して格納
+            finalEntries.forEach(entry => {
                 if (!entry || !entry.trim()) return;
                 const idx = entry.indexOf(':');
                 const idxZen = entry.indexOf('：');
@@ -1134,7 +1164,7 @@
                 
                 if (sepIdx !== -1) {
                     const rawKey = entry.substring(0, sepIdx).trim();
-                    const key = rawKey.replace(/<rt>[^<]*<\/rt>/g, '').replace(/<[^>]+>/g, '');
+                    const key = rawKey.replace(/<rt>[^<]*<\/rt>/g, '').replace(/<[^>]+>/g, '').trim();
                     const val = entry.substring(sepIdx + 1).trim();
                     if (key && val) {
                         if (!memoMap[key]) {
