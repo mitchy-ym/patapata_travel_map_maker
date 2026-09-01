@@ -145,6 +145,7 @@ def create_interactive_map_html(geojson_path="japan.geojson", output_html_path="
                 "観光地": "読み込み中...",
                 "食べ物": "読み込み中...",
                 "お酒": "読み込み中...",
+                "お土産": "読み込み中...",
                 "メモ": ""
             }
 
@@ -502,6 +503,7 @@ def create_interactive_map_html(geojson_path="japan.geojson", output_html_path="
         .sightseeing-title {{ color: #196f3d; }} /* 常磐緑 */
         .food-title {{ color: #b95000; }}        /* 柿色・黄丹 */
         .drink-title {{ color: #1a5276; }}       /* 藍鉄 */
+        .souvenir-title {{ color: #6b21a8; }}    /* 京紫・藤紫 */
         .tooltip-content {{
             font-size: 12.5px;
             background: #fdfcf9;
@@ -514,6 +516,7 @@ def create_interactive_map_html(geojson_path="japan.geojson", output_html_path="
         .sightseeing-box {{ background: #f2faf4; border-left-color: #52be80; }}
         .food-box {{ background: #fdf8ee; border-left-color: #f39c12; }}
         .drink-box {{ background: #f0f7fb; border-left-color: #5499c7; }}
+        .souvenir-box {{ background: #faf5ff; border-left-color: #a855f7; }}
 
         /* モバイル・レスポンシブ最適化 */
         @media (max-width: 640px) {{
@@ -713,6 +716,15 @@ def create_interactive_map_html(geojson_path="japan.geojson", output_html_path="
             background: #dff0fa;
             transform: scale(1.06);
         }}
+        .add-souvenir-btn {{
+            color: #6b21a8;
+            border: 1px solid #c084fc;
+            background: #faf5ff;
+        }}
+        .add-souvenir-btn:hover {{
+            background: #f3e8ff;
+            transform: scale(1.06);
+        }}
 
         /* 投稿モーダル（ダイアログ）スタイル */
         .modal-overlay {{
@@ -874,6 +886,11 @@ def create_interactive_map_html(geojson_path="japan.geojson", output_html_path="
             color: #236329;
             border: 1px solid rgba(35, 99, 41, 0.2);
         }}
+        .pill-souvenir {{
+            background: rgba(107, 33, 168, 0.1);
+            color: #6b21a8;
+            border: 1px solid rgba(107, 33, 168, 0.2);
+        }}
 
         /* 画面全体の同期中オーバーレイ（極薄すりガラス・操作完全ブロック） */
         .full-loading-overlay {{
@@ -1022,6 +1039,7 @@ def create_interactive_map_html(geojson_path="japan.geojson", output_html_path="
                         <option value="sightseeing">観光地・名所</option>
                         <option value="food">ご当地グルメ・食べ物</option>
                         <option value="drink">地酒・お酒</option>
+                        <option value="souvenir">お土産・名産品</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -1337,7 +1355,7 @@ def create_interactive_map_html(geojson_path="japan.geojson", output_html_path="
                 // 該当都道府県・カテゴリの既存スポット一覧をオプションとして生成
                 selectInput.innerHTML = '';
                 const prefObj = patamapData[pref];
-                const catKey = cat === 'food' ? '食べ物' : cat === 'drink' ? 'お酒' : '観光地';
+                const catKey = cat === 'food' ? '食べ物' : cat === 'drink' ? 'お酒' : cat === 'souvenir' ? 'お土産' : '観光地';
                 if (prefObj && prefObj[catKey] && prefObj[catKey] !== 'なし') {{
                     const rawItems = prefObj[catKey].replace(/\\n/g, '、').replace(/,/g, '、').split('、').map(s => s.trim()).filter(s => s);
                     rawItems.forEach(it => {{
@@ -1355,7 +1373,7 @@ def create_interactive_map_html(geojson_path="japan.geojson", output_html_path="
                 catEl.disabled = true;
             }} else {{
                 // 新規項目追加モード：スポット名は自由入力＋ふりがな入力
-                const catLabel = cat === 'food' ? 'グルメ' : cat === 'drink' ? '地酒' : '観光地';
+                const catLabel = cat === 'food' ? 'グルメ' : cat === 'drink' ? '地酒' : cat === 'souvenir' ? 'お土産' : '観光地';
                 titleEl.innerHTML = `【${{pref}}】に新しい${{catLabel}}を追加`;
                 labelEl.innerHTML = `項目・スポット名`;
                 selectInput.style.display = 'none';
@@ -1447,7 +1465,7 @@ def create_interactive_map_html(geojson_path="japan.geojson", output_html_path="
 
             // ローカルデータに即時反映
             if (patamapData[pref]) {{
-                const catKey = cat === 'food' ? '食べ物' : cat === 'drink' ? 'お酒' : '観光地';
+                const catKey = cat === 'food' ? '食べ物' : cat === 'drink' ? 'お酒' : cat === 'souvenir' ? 'お土産' : '観光地';
                 if (!isCommentMode) {{
                     if (!patamapData[pref][catKey] || patamapData[pref][catKey] === 'なし') {{
                         patamapData[pref][catKey] = finalItemName;
@@ -1552,6 +1570,7 @@ def create_interactive_map_html(geojson_path="japan.geojson", output_html_path="
                         const sightHtml = formatList(prefData['観光地'], 'sightseeing', prefName, memoMap);
                         const foodHtml = formatList(prefData['食べ物'], 'food', prefName, memoMap);
                         const drinkHtml = formatList(prefData['お酒'], 'drink', prefName, memoMap);
+                        const souvenirHtml = formatList(prefData['お土産'], 'souvenir', prefName, memoMap);
 
                         function getCount(text) {{
                             if (!text || text === 'なし' || text === '読み込み中...') return 0;
@@ -1560,6 +1579,7 @@ def create_interactive_map_html(geojson_path="japan.geojson", output_html_path="
                         const countSight = getCount(prefData['観光地']);
                         const countFood = getCount(prefData['食べ物']);
                         const countDrink = getCount(prefData['お酒']);
+                        const countSouvenir = getCount(prefData['お土産']);
 
                         return `
                             <div class="tooltip-card">
@@ -1571,6 +1591,7 @@ def create_interactive_map_html(geojson_path="japan.geojson", output_html_path="
                                         <span class="count-pill pill-sightseeing" title="観光地 ${{countSight}}件">📸 ${{countSight}}</span>
                                         <span class="count-pill pill-food" title="グルメ ${{countFood}}件">🍽️ ${{countFood}}</span>
                                         <span class="count-pill pill-drink" title="地酒 ${{countDrink}}件">🍶 ${{countDrink}}</span>
+                                        <span class="count-pill pill-souvenir" title="お土産 ${{countSouvenir}}件">🎁 ${{countSouvenir}}</span>
                                         <span class="tooltip-region-badge" style="background:${{colorInfo.badge_bg}}; color:${{colorInfo.text}}; border:1px solid ${{colorInfo.color}};">
                                             ${{region}}
                                         </span>
@@ -1596,6 +1617,13 @@ def create_interactive_map_html(geojson_path="japan.geojson", output_html_path="
                                         <button type="button" class="add-item-btn add-drink-btn" onclick="openAddModal('${{prefName}}', 'drink', '')" title="【${{prefName}}】に新しい地酒を追加">➕ 地酒追加</button>
                                     </div>
                                     <div class="tooltip-content drink-box">${{drinkHtml}}</div>
+                                </div>
+                                <div class="tooltip-section">
+                                    <div class="tooltip-title souvenir-title">
+                                        <span>🎁 お土産・名産品</span>
+                                        <button type="button" class="add-item-btn add-souvenir-btn" onclick="openAddModal('${{prefName}}', 'souvenir', '')" title="【${{prefName}}】に新しいお土産を追加">➕ お土産追加</button>
+                                    </div>
+                                    <div class="tooltip-content souvenir-box">${{souvenirHtml}}</div>
                                 </div>
                             </div>
                         `;
