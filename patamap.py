@@ -1155,7 +1155,7 @@ def create_interactive_map_html(geojson_path="japan.geojson", output_html_path="
             const memoMap = {{}};
             if (!memoText || memoText === 'なし') return memoMap;
             
-            // 1. 改行で分割し、コロンのない行は直前の口コミの改行続きとして安全に結合
+            // 1. 改行で分割し、コロンのない行は直前の口コミの改行続きとして安全に結合（<br>で改行を維持）
             const rawLines = memoText.split(/\\r?\\n/);
             const rawEntries = [];
             let currentEntry = '';
@@ -1172,7 +1172,7 @@ def create_interactive_map_html(geojson_path="japan.geojson", output_html_path="
                     currentEntry = trimmed;
                 }} else {{
                     if (currentEntry) {{
-                        currentEntry += ' ' + trimmed;
+                        currentEntry += '<br>' + trimmed;
                     }} else {{
                         currentEntry = trimmed;
                     }}
